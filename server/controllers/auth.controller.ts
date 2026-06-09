@@ -3,6 +3,7 @@ import type { AuthRequest } from '../middleware/auth.js'
 import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
 import { prisma } from '../prisma/client.js'
+import { logger } from '../lib/logger.js'
 
 const IS_PROD = process.env.NODE_ENV === 'production'
 
@@ -171,7 +172,7 @@ export async function logout(req: AuthRequest, res: Response) {
     await prisma.user.update({
       where: { id: req.user.id },
       data: { tokenVersion: { increment: 1 } },
-    }).catch((e: Error) => console.error('[auth] tokenVersion increment failed:', e.message))
+    }).catch((e: Error) => logger.error({ err: e.message }, '[auth] tokenVersion increment failed'))
   }
   clearRefreshCookie(res)
   res.json({ ok: true })

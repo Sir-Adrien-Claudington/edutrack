@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from 'express'
+import { logger } from '../lib/logger.js'
 
 const INJECTION_PATTERNS = [
   /ignore\s+(previous|all|prior)\s+instructions/i,
@@ -28,7 +29,7 @@ function containsInjection(value: unknown): boolean {
 export function promptGuard(req: Request, res: Response, next: NextFunction) {
   if (containsInjection(req.body)) {
     const userId = (req as any).user?.id ?? 'unauthenticated'
-    console.warn(`[promptGuard] Injection attempt blocked — ip=${req.ip} userId=${userId} ts=${new Date().toISOString()}`)
+    logger.warn({ ip: req.ip, userId }, '[promptGuard] Injection attempt blocked')
     res.status(400).json({ error: 'Invalid input' })
     return
   }

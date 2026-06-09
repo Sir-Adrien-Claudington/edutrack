@@ -6,6 +6,7 @@ import { generateStudentFeedback } from '../services/ai.service.js'
 import { getStudentProgress } from '../services/analytics.service.js'
 import { createNotification } from './notification.controller.js'
 import { checkPlagiarism } from './plagiarism.controller.js'
+import { logger } from '../lib/logger.js'
 
 export async function submitAssignment(req: AuthRequest, res: Response) {
   const { assignmentId, answers } = req.body
@@ -95,7 +96,7 @@ export async function submitAssignment(req: AuthRequest, res: Response) {
       isResubmission ? 'A student resubmitted work' : 'New submission received',
       `${student?.name ?? 'A student'} ${isResubmission ? 'resubmitted' : 'submitted'} "${assignment.title}".`,
       `/teacher/submission/${submission.id}`,
-    ).catch((e: Error) => console.error('[notification] teacher submission alert failed:', e.message))
+    ).catch((e: Error) => logger.error({ err: e.message }, '[notification] teacher submission alert failed'))
   }
 
   // Notify student their assignment was graded (for auto-graded submissions)
@@ -106,7 +107,7 @@ export async function submitAssignment(req: AuthRequest, res: Response) {
       'Your assignment was graded',
       `Your submission for "${assignment.title}" has been graded.`,
       `/student/submission/${submission.id}`,
-    ).catch((e: Error) => console.error('[notification] student graded alert failed:', e.message))
+    ).catch((e: Error) => logger.error({ err: e.message }, '[notification] student graded alert failed'))
   }
 
   // Fire plagiarism check async (fire and forget)
@@ -132,7 +133,7 @@ export async function submitAssignment(req: AuthRequest, res: Response) {
     })
   } catch (err) {
     // Log message only — Anthropic SDK errors include Authorization header (API key)
-    console.error('AI feedback generation failed:', (err as any)?.message ?? String(err))
+    logger.error({ err: (err as any)?.message ?? String(err) }, 'AI feedback generation failed')
   }
 }
 
@@ -234,7 +235,7 @@ export async function teacherGrade(req: AuthRequest, res: Response) {
     'Your assignment was graded',
     `Your submission for "${submission.assignment.title}" has been graded. Score: ${totalScore.toFixed(0)}%`,
     `/student/submission/${id}`,
-  ).catch((e: Error) => console.error('[notification] teacher grade alert failed:', e.message))
+  ).catch((e: Error) => logger.error({ err: e.message }, '[notification] teacher grade alert failed'))
 
   res.json({ ok: true, totalScore })
 }

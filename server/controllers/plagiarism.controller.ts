@@ -1,6 +1,7 @@
 import { prisma } from '../prisma/client.js'
 import Anthropic from '@anthropic-ai/sdk'
 import { createNotification } from './notification.controller.js'
+import { logger } from '../lib/logger.js'
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 
@@ -89,7 +90,7 @@ Respond with ONLY valid JSON in this exact format:
     }
   } catch (err) {
     // Log message only — Anthropic SDK errors include Authorization header (API key)
-    console.error('Plagiarism check failed:', (err as any)?.message ?? String(err))
+    logger.error({ err: (err as any)?.message ?? String(err) }, 'Plagiarism check failed')
   }
 }
 

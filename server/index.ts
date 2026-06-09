@@ -3,6 +3,7 @@ import dotenv from 'dotenv'
 import { PrismaClient } from '@prisma/client'
 import { createCalendarEvent } from './services/google.service.js'
 import { createApp } from './app.js'
+import { logger } from './lib/logger.js'
 
 dotenv.config()
 
@@ -17,17 +18,17 @@ if (process.env.NODE_ENV === 'production') {
   const required = ['DATABASE_URL', 'JWT_SECRET', 'JWT_REFRESH_SECRET', 'ANTHROPIC_API_KEY', 'CORS_ORIGIN', 'FRONTEND_URL']
   const missing = required.filter(key => !process.env[key])
   if (missing.length > 0) {
-    console.error('Missing required production env vars:', missing)
+    logger.error({ missing }, 'Missing required production env vars')
     process.exit(1)
   }
-  console.log('Production environment validated ✓')
+  logger.info('Production environment validated')
 }
 
 const app = createApp()
 const PORT = process.env.PORT || 4000
 
 app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`)
+  logger.info({ port: PORT }, 'Server running')
   startReminderScheduler()
 })
 

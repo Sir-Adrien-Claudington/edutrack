@@ -3,9 +3,11 @@ import express from 'express'
 import cors from 'cors'
 import helmet from 'helmet'
 import cookieParser from 'cookie-parser'
+import pinoHttp from 'pino-http'
 import { join, dirname } from 'path'
 import { fileURLToPath } from 'url'
 import { loginLimiter, registerLimiter, apiLimiter } from './middleware/rateLimiter.js'
+import { logger } from './lib/logger.js'
 import authRoutes from './routes/auth.js'
 import classroomRoutes from './routes/classrooms.js'
 import assignmentRoutes from './routes/assignments.js'
@@ -65,6 +67,7 @@ export function createApp() {
     allowedHeaders: ['Content-Type', 'Authorization'],
   }))
 
+  app.use(pinoHttp({ logger }))
   app.use(cookieParser())
   app.use(express.json({ limit: '1mb' }))
 

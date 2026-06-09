@@ -3,6 +3,7 @@ import { AuthRequest } from '../middleware/auth.js'
 import { getStudentProgress, getClassroomAnalytics } from '../services/analytics.service.js'
 import { generateClassInsight } from '../services/ai.service.js'
 import { prisma } from '../prisma/client.js'
+import { logger } from '../lib/logger.js'
 
 export async function studentProgress(req: AuthRequest, res: Response) {
   const studentId = req.user!.role === 'STUDENT' ? req.user!.id : req.params.studentId
@@ -49,7 +50,7 @@ export async function classInsight(req: AuthRequest, res: Response) {
   } catch (err: any) {
     // Surface a clear, safe message to the UI instead of an unhandled 500.
     // Never leak the raw SDK error (it may contain the API key in headers).
-    console.error('classInsight failed:', err?.message)
+    logger.error({ err: err?.message }, 'classInsight failed')
     const isAuth = err?.status === 401 || /api[_-]?key|authentication/i.test(err?.message ?? '')
     res.status(502).json({
       error: isAuth

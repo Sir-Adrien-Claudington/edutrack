@@ -3,6 +3,7 @@ import jwt from 'jsonwebtoken'
 import { authenticate } from '../middleware/auth.js'
 import { getAuthUrl, exchangeCode } from '../services/google.service.js'
 import { PrismaClient } from '@prisma/client'
+import { logger } from '../lib/logger.js'
 
 const prisma = new PrismaClient()
 const router = Router()
@@ -59,7 +60,7 @@ router.get('/callback', async (req, res) => {
     res.redirect(`${frontendBase}${settingsPath}?google=connected`)
   } catch (err) {
     // Log message only — GaxiosError may include client_secret in request body
-    console.error('[Google OAuth] callback error:', (err as any)?.message ?? String(err))
+    logger.error({ err: (err as any)?.message ?? String(err) }, '[Google OAuth] callback error')
     res.redirect(`${frontendBase}/settings?google=error`)
   }
 })

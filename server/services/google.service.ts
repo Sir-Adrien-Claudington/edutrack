@@ -1,5 +1,6 @@
 import { google } from 'googleapis'
 import { PrismaClient } from '@prisma/client'
+import { logger } from '../lib/logger.js'
 
 const prisma = new PrismaClient()
 
@@ -73,6 +74,6 @@ export async function createCalendarEvent(
     })
   } catch (err) {
     // Log message only — full GaxiosError includes Authorization header (bearer token)
-    console.error('[GoogleCalendar] createCalendarEvent failed:', (err as any)?.message ?? String(err))
+    logger.error({ err: (err as any)?.message ?? String(err) }, '[GoogleCalendar] createCalendarEvent failed')
   }
 }
