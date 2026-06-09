@@ -67,6 +67,14 @@ This project follows a layered security model across GitHub, Railway deployment,
 - Health check endpoint: `GET /health` — configure in Railway → Settings → Health Check Path
 - Required production env vars are validated at startup — server exits if any are missing
 
+### Code Quality Rules (enforced for all AI-generated code)
+
+- **Never write silent catch blocks.** Every `catch` or `.catch()` must at minimum log with `console.error`. If suppressing a side-effect failure intentionally, add a comment explaining why.
+- **Never use `eval()`, `new Function()`, or `exec()`** on any user-supplied input.
+- **No raw SQL string concatenation.** All database queries must use Prisma ORM or parameterized statements.
+- **No hardcoded secrets.** All credentials must come from `process.env.*`.
+- **Definition of done:** A feature is working when (1) the success path returns the documented response, (2) invalid input returns the documented error, (3) auth failures return 401/403, and (4) errors are logged — not silently swallowed.
+
 ### App Security
 
 - **Rate limiting:** login (10/min), register (5/hr), API (500/15 min) — `server/middleware/rateLimiter.ts`

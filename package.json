@@ -26,6 +26,8 @@
     "@dnd-kit/sortable": "^10.0.0",
     "@dnd-kit/utilities": "^3.2.2",
     "@prisma/client": "^5.22.0",
+    "@sentry/node": "^10.56.0",
+    "@sentry/react": "^10.56.0",
     "axios": "^1.16.1",
     "bcryptjs": "^3.0.3",
     "cookie-parser": "^1.4.7",

@@ -1,3 +1,4 @@
+import * as Sentry from '@sentry/node'
 import express from 'express'
 import cors from 'cors'
 import helmet from 'helmet'
@@ -34,6 +35,14 @@ import { createCalendarEvent } from './services/google.service.js'
 
 import { PrismaClient } from '@prisma/client'
 dotenv.config()
+
+// Sentry must be initialised before any other imports that touch Express routes
+Sentry.init({
+  dsn: process.env.SENTRY_DSN,
+  environment: process.env.NODE_ENV ?? 'development',
+  tracesSampleRate: 0.1,
+  enabled: !!process.env.SENTRY_DSN,
+})
 
 if (process.env.NODE_ENV === 'production') {
   const required = [
@@ -146,6 +155,9 @@ if (process.env.NODE_ENV === 'production') {
     res.sendFile(join(__dirname, '../dist/index.html'))
   })
 }
+
+// Sentry error handler must come before other error middleware
+Sentry.setupExpressErrorHandler(app)
 
 // Clean JSON error for oversized payloads instead of HTML stack trace
 app.use((err: any, _req: any, res: any, next: any) => {
