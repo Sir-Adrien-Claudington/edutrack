@@ -20,7 +20,8 @@
     "electron:build:prod": "cross-env CSC_IDENTITY_AUTO_DISCOVERY=false VITE_API_URL=https://edutrack-production-2a6d.up.railway.app vite build && tsc -p electron/tsconfig.json && node -e \"require('fs').writeFileSync('electron/dist-electron/package.json', '{\\\"type\\\":\\\"commonjs\\\"}')\" && electron-builder",
     "generate-icons": "node scripts/generate-icons.mjs",
     "test": "vitest run --reporter=verbose",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "prepare": "husky"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.98.0",
@@ -112,6 +113,7 @@
     "eslint-plugin-react-hooks": "^7.1.1",
     "eslint-plugin-react-refresh": "^0.5.2",
     "globals": "^17.6.0",
+    "husky": "^9.1.7",
     "nodemon": "^3.1.14",
     "png-to-ico": "^3.0.1",
     "postcss": "^8.5.15",

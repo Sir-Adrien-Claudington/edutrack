@@ -43,27 +43,29 @@ export async function submitAssignment(req: AuthRequest, res: Response) {
 
   const { gradedAnswers, totalScore } = gradeSubmission(assignment.questions, answers)
 
+  const answerData = gradedAnswers.map(a => ({
+    questionId: a.questionId,
+    responseText: a.responseText,
+    isCorrect: a.isCorrect,
+    pointsAwarded: a.pointsAwarded,
+  }))
+
   let submission
   if (existing) {
-    // Replace the prior answers and bump the resubmission counter.
-    await prisma.answer.deleteMany({ where: { submissionId: existing.id } })
-    submission = await prisma.submission.update({
-      where: { id: existing.id },
-      data: {
-        totalScore,
-        status: 'SUBMITTED',
-        submittedAt: new Date(),
-        resubmissionCount: existing.resubmissionCount + 1,
-        answers: {
-          create: gradedAnswers.map(a => ({
-            questionId: a.questionId,
-            responseText: a.responseText,
-            isCorrect: a.isCorrect,
-            pointsAwarded: a.pointsAwarded,
-          })),
+    // deleteMany + update must be atomic — if update fails, old answers are already gone
+    submission = await prisma.$transaction(async (tx) => {
+      await tx.answer.deleteMany({ where: { submissionId: existing.id } })
+      return tx.submission.update({
+        where: { id: existing.id },
+        data: {
+          totalScore,
+          status: 'SUBMITTED',
+          submittedAt: new Date(),
+          resubmissionCount: existing.resubmissionCount + 1,
+          answers: { create: answerData },
         },
-      },
-      include: { answers: true },
+        include: { answers: true },
+      })
     })
   } else {
     submission = await prisma.submission.create({
@@ -72,14 +74,7 @@ export async function submitAssignment(req: AuthRequest, res: Response) {
         studentId: req.user!.id,
         totalScore,
         status: 'SUBMITTED',
-        answers: {
-          create: gradedAnswers.map(a => ({
-            questionId: a.questionId,
-            responseText: a.responseText,
-            isCorrect: a.isCorrect,
-            pointsAwarded: a.pointsAwarded,
-          })),
-        },
+        answers: { create: answerData },
       },
       include: { answers: true },
     })
@@ -200,34 +195,38 @@ export async function teacherGrade(req: AuthRequest, res: Response) {
     res.status(403).json({ error: 'Forbidden' }); return
   }
 
-  if (Array.isArray(grades)) {
-    await Promise.all(
-      (grades as { answerId: string; pointsAwarded: number }[]).map(g =>
-        prisma.answer.update({
-          where: { id: g.answerId },
-          data: { pointsAwarded: Math.max(0, Number(g.pointsAwarded)) },
-        })
+  const totalScore = await prisma.$transaction(async (tx) => {
+    if (Array.isArray(grades)) {
+      await Promise.all(
+        (grades as { answerId: string; pointsAwarded: number }[]).map(g =>
+          tx.answer.update({
+            where: { id: g.answerId },
+            data: { pointsAwarded: Math.max(0, Number(g.pointsAwarded)) },
+          })
+        )
       )
-    )
-  }
+    }
 
-  const answers = await prisma.answer.findMany({
-    where: { submissionId: id },
-    include: { question: { select: { points: true } } },
-  })
-  const totalPoints = answers.reduce((s, a) => s + a.question.points, 0)
-  const earned = answers.reduce((s, a) => s + (a.pointsAwarded ?? 0), 0)
-  const totalScore = totalPoints > 0 ? (earned / totalPoints) * 100 : 0
-
-  await prisma.submission.update({ where: { id }, data: { totalScore, status: 'GRADED' } })
-
-  if (teacherNote !== undefined) {
-    await prisma.feedback.upsert({
+    const answers = await tx.answer.findMany({
       where: { submissionId: id },
-      create: { submissionId: id, teacherNote: String(teacherNote) },
-      update: { teacherNote: String(teacherNote) },
+      include: { question: { select: { points: true } } },
     })
-  }
+    const totalPoints = answers.reduce((s, a) => s + a.question.points, 0)
+    const earned = answers.reduce((s, a) => s + (a.pointsAwarded ?? 0), 0)
+    const score = totalPoints > 0 ? (earned / totalPoints) * 100 : 0
+
+    await tx.submission.update({ where: { id }, data: { totalScore: score, status: 'GRADED' } })
+
+    if (teacherNote !== undefined) {
+      await tx.feedback.upsert({
+        where: { submissionId: id },
+        create: { submissionId: id, teacherNote: String(teacherNote) },
+        update: { teacherNote: String(teacherNote) },
+      })
+    }
+
+    return score
+  })
 
   createNotification(
     submission.studentId,
