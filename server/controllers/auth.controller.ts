@@ -4,27 +4,7 @@ import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
 import { prisma } from '../prisma/client.js'
 import { logger } from '../lib/logger.js'
-
-const IS_PROD = process.env.NODE_ENV === 'production'
-
-function setRefreshCookie(res: Response, token: string) {
-  res.cookie('refresh_token', token, {
-    httpOnly: true,
-    secure: IS_PROD,
-    sameSite: IS_PROD ? 'none' : 'lax',
-    maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
-    path: '/api/auth',
-  })
-}
-
-function clearRefreshCookie(res: Response) {
-  res.clearCookie('refresh_token', {
-    httpOnly: true,
-    secure: IS_PROD,
-    sameSite: IS_PROD ? 'none' : 'lax',
-    path: '/api/auth',
-  })
-}
+import { setRefreshCookie, clearRefreshCookie } from './auth.cookie.js'
 
 function generateTokens(user: { id: string; role: string; email?: string | null; tokenVersion?: number }) {
   const tv = user.tokenVersion ?? 0
@@ -33,7 +13,6 @@ function generateTokens(user: { id: string; role: string; email?: string | null;
     process.env.JWT_SECRET!,
     { expiresIn: '15m' }
   )
-  // tv included in refresh token so force-logout invalidates refresh tokens too
   const refresh = jwt.sign(
     { id: user.id, tv },
     process.env.JWT_REFRESH_SECRET!,
@@ -56,7 +35,6 @@ export async function register(req: Request, res: Response) {
     res.status(400).json({ error: 'All fields are required' })
     return
   }
-  // Self-registration is only allowed for TEACHER and STUDENT
   if (!['TEACHER', 'STUDENT'].includes(role)) {
     res.status(400).json({ error: 'Role must be TEACHER or STUDENT' })
     return
@@ -92,7 +70,7 @@ export async function register(req: Request, res: Response) {
 export async function login(req: Request, res: Response) {
   const { email, password, username, classCode } = req.body
 
-  // Username + class code login — for teacher-created student accounts
+  // Username + class code login — teacher-created student accounts (no MFA)
   if (username && classCode && !email) {
     const user = await prisma.user.findUnique({
       where: { username },
@@ -128,6 +106,14 @@ export async function login(req: Request, res: Response) {
     res.status(401).json({ error: 'Invalid credentials' })
     return
   }
+
+  // MFA gate — if enabled, return a short-lived token instead of full session
+  if (user.mfaEnabled) {
+    const mfaToken = jwt.sign({ id: user.id, scope: 'mfa' }, process.env.JWT_SECRET!, { expiresIn: '5m' })
+    res.json({ requiresMfa: true, mfaToken })
+    return
+  }
+
   await prisma.user.update({ where: { id: user.id }, data: { lastLoginAt: new Date() } })
   const tokens = generateTokens(user)
   setRefreshCookie(res, tokens.refresh)
@@ -154,7 +140,6 @@ export async function refresh(req: Request, res: Response) {
       res.status(403).json({ error: 'Account suspended' })
       return
     }
-    // If token carries tv, verify it matches current tokenVersion (honours force-logout)
     if (payload.tv !== undefined && payload.tv !== user.tokenVersion) {
       res.status(401).json({ error: 'Session expired' })
       return
@@ -181,7 +166,7 @@ export async function logout(req: AuthRequest, res: Response) {
 export async function me(req: AuthRequest, res: Response) {
   const user = await prisma.user.findUnique({
     where: { id: req.user!.id },
-    select: { id: true, email: true, name: true, role: true, createdAt: true },
+    select: { id: true, email: true, name: true, role: true, createdAt: true, mfaEnabled: true },
   })
   res.json(user)
 }

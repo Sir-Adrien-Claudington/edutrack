@@ -1,0 +1,110 @@
+# EduTrack Operations Runbook
+
+## Deployment (Railway)
+
+```bash
+# Deploy latest master branch
+railway up --detach
+
+# Check live logs
+railway logs
+
+# Check environment variables
+railway variables
+
+# Set a variable
+railway variables set KEY=value
+```
+
+## Rollback procedure
+
+### Option A — Code rollback (most common)
+
+1. Find the last good commit:
+   ```bash
+   git log --oneline -10
+   ```
+
+2. Create a rollback commit (preferred over `git revert` for speed):
+   ```bash
+   git revert HEAD --no-edit
+   git push
+   ```
+   Railway auto-deploys on push.
+
+3. Verify the deploy in Railway dashboard → **Deployments** → confirm new deploy goes green.
+
+### Option B — Force-rollback to a specific commit
+
+```bash
+git checkout <good-commit-sha> -- server/
+git add server/
+git commit -m "rollback: revert server to <sha>"
+git push
+```
+
+### Option C — Railway instant rollback (no code change)
+
+1. Railway dashboard → **Deployments**
+2. Find the last successful deployment
+3. Click **Redeploy** on that entry
+
+Note: this redeploys the previously built image without running migrations.
+
+## Database rollback
+
+> Prisma does not auto-rollback schema changes. Follow these steps carefully.
+
+### Roll back the latest migration
+
+```bash
+# Connect to the Railway Postgres instance
+railway connect Postgres
+
+# Manually reverse the migration SQL (see down.sql next to each migration.sql)
+\i server/prisma/migrations/<migration-folder>/down.sql
+
+# Then remove the migration record so Prisma won't think it's applied
+DELETE FROM "_prisma_migrations" WHERE migration_name = '<migration-folder>';
+
+# Exit psql
+\q
+```
+
+### Regenerate the Prisma client after schema rollback
+
+```bash
+npx prisma generate --schema=server/prisma/schema.prisma
+```
+
+## Environment secrets rotation
+
+1. Generate new secrets:
+   ```bash
+   node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"
+   ```
+
+2. Set in Railway:
+   ```bash
+   railway variables set JWT_SECRET=<new> JWT_REFRESH_SECRET=<new>
+   ```
+
+3. Deploy to pick up new secrets:
+   ```bash
+   railway up --detach
+   ```
+
+4. All active sessions will be invalidated on the next token refresh (since old JWTs will fail verification).
+
+## Health check
+
+```bash
+curl https://edutrack-production-2a6d.up.railway.app/health
+# Expected: {"status":"ok","timestamp":"...","environment":"production"}
+```
+
+## Prisma Studio (inspect live DB)
+
+```bash
+DATABASE_URL=$(railway variables get DATABASE_URL) npx prisma studio --schema=server/prisma/schema.prisma
+```

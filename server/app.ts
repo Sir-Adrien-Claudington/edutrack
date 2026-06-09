@@ -9,6 +9,7 @@ import { fileURLToPath } from 'url'
 import { loginLimiter, registerLimiter, apiLimiter } from './middleware/rateLimiter.js'
 import { logger } from './lib/logger.js'
 import authRoutes from './routes/auth.js'
+import mfaRoutes from './routes/mfa.js'
 import classroomRoutes from './routes/classrooms.js'
 import assignmentRoutes from './routes/assignments.js'
 import submissionRoutes from './routes/submissions.js'
@@ -83,6 +84,7 @@ export function createApp() {
   app.get('/api/version', (_req, res) => { res.json({ version: APP_VERSION }) })
 
   app.use('/api/auth', authRoutes)
+  app.use('/api/auth/mfa', mfaRoutes)
   app.use('/api/classrooms', classroomRoutes)
   app.use('/api/assignments', assignmentRoutes)
   app.use('/api/submissions', submissionRoutes)

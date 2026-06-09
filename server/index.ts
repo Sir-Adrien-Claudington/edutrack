@@ -6,6 +6,7 @@ import { createApp } from './app.js'
 import { logger } from './lib/logger.js'
 
 dotenv.config()
+dotenv.config({ path: `.env.${process.env.NODE_ENV ?? 'development'}`, override: true })
 
 Sentry.init({
   dsn: process.env.SENTRY_DSN,
@@ -38,7 +39,29 @@ const prismaScheduler = new PrismaClient()
 
 function startReminderScheduler() {
   runDailyReminders()
+  runDataRetentionPurge()
   setInterval(runDailyReminders, 24 * 60 * 60 * 1000)
+  setInterval(runDataRetentionPurge, 24 * 60 * 60 * 1000)
+}
+
+async function runDataRetentionPurge() {
+  try {
+    const now = new Date()
+    const ninetyDaysAgo = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000)
+    const oneYearAgo = new Date(now.getTime() - 365 * 24 * 60 * 60 * 1000)
+
+    const [notifs, auditLogs, messages] = await Promise.all([
+      prismaScheduler.notification.deleteMany({ where: { createdAt: { lt: ninetyDaysAgo } } }),
+      prismaScheduler.auditLog.deleteMany({ where: { createdAt: { lt: oneYearAgo } } }),
+      prismaScheduler.message.deleteMany({ where: { createdAt: { lt: oneYearAgo } } }),
+    ])
+
+    if (notifs.count || auditLogs.count || messages.count) {
+      logger.info({ notifs: notifs.count, auditLogs: auditLogs.count, messages: messages.count }, 'Data retention purge complete')
+    }
+  } catch (err: any) {
+    logger.error({ err: err?.message }, 'Data retention purge failed')
+  }
 }
 
 async function runDailyReminders() {
