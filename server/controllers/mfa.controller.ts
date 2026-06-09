@@ -1,6 +1,7 @@
 import { Response } from 'express'
-import { authenticator } from 'otplib'
+import { createRequire } from 'module'
 import QRCode from 'qrcode'
+const { authenticator } = createRequire(import.meta.url)('otplib') as { authenticator: typeof import('otplib').authenticator }
 import jwt from 'jsonwebtoken'
 import type { AuthRequest } from '../middleware/auth.js'
 import { prisma } from '../prisma/client.js'
