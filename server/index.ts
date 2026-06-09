@@ -1,6 +1,7 @@
 import express from 'express'
 import cors from 'cors'
 import helmet from 'helmet'
+import cookieParser from 'cookie-parser'
 import dotenv from 'dotenv'
 import { loginLimiter, registerLimiter, apiLimiter } from './middleware/rateLimiter.js'
 import { join, dirname } from 'path'
@@ -87,6 +88,8 @@ app.use(cors({
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
 }))
+
+app.use(cookieParser())
 
 // Body size limit — prevents payload-based DoS
 app.use(express.json({ limit: '1mb' }))

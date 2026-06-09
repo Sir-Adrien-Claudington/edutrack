@@ -21,8 +21,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const { user, logout } = useAuthStore()
   const navigate = useNavigate()
 
-  function handleLogout() {
-    logout()
+  async function handleLogout() {
+    await logout()
     navigate('/login')
   }
 

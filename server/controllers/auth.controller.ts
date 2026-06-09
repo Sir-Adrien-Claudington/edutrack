@@ -4,6 +4,27 @@ import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
 import { prisma } from '../prisma/client.js'
 
+const IS_PROD = process.env.NODE_ENV === 'production'
+
+function setRefreshCookie(res: Response, token: string) {
+  res.cookie('refresh_token', token, {
+    httpOnly: true,
+    secure: IS_PROD,
+    sameSite: IS_PROD ? 'none' : 'lax',
+    maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
+    path: '/api/auth',
+  })
+}
+
+function clearRefreshCookie(res: Response) {
+  res.clearCookie('refresh_token', {
+    httpOnly: true,
+    secure: IS_PROD,
+    sameSite: IS_PROD ? 'none' : 'lax',
+    path: '/api/auth',
+  })
+}
+
 function generateTokens(user: { id: string; role: string; email?: string | null; tokenVersion?: number }) {
   const tv = user.tokenVersion ?? 0
   const access = jwt.sign(
@@ -60,9 +81,10 @@ export async function register(req: Request, res: Response) {
     data: { email: email.toLowerCase().trim(), passwordHash, name: name.trim(), role },
   })
   const tokens = generateTokens(user)
+  setRefreshCookie(res, tokens.refresh)
   res.status(201).json({
     user: { id: user.id, email: user.email, name: user.name, role: user.role },
-    ...tokens,
+    access: tokens.access,
   })
 }
 
@@ -81,7 +103,8 @@ export async function login(req: Request, res: Response) {
     if (!matchingClass) { res.status(401).json({ error: 'Invalid username or class code' }); return }
     await prisma.user.update({ where: { id: user.id }, data: { lastLoginAt: new Date() } })
     const tokens = generateTokens(user)
-    res.json({ user: { id: user.id, email: user.email, name: user.name, role: user.role }, ...tokens })
+    setRefreshCookie(res, tokens.refresh)
+    res.json({ user: { id: user.id, email: user.email, name: user.name, role: user.role }, access: tokens.access })
     return
   }
 
@@ -106,14 +129,15 @@ export async function login(req: Request, res: Response) {
   }
   await prisma.user.update({ where: { id: user.id }, data: { lastLoginAt: new Date() } })
   const tokens = generateTokens(user)
+  setRefreshCookie(res, tokens.refresh)
   res.json({
     user: { id: user.id, email: user.email, name: user.name, role: user.role },
-    ...tokens,
+    access: tokens.access,
   })
 }
 
 export async function refresh(req: Request, res: Response) {
-  const { refreshToken } = req.body
+  const refreshToken = req.cookies?.refresh_token
   if (!refreshToken) {
     res.status(400).json({ error: 'Refresh token required' })
     return
@@ -135,10 +159,22 @@ export async function refresh(req: Request, res: Response) {
       return
     }
     const tokens = generateTokens(user)
-    res.json(tokens)
+    setRefreshCookie(res, tokens.refresh)
+    res.json({ access: tokens.access })
   } catch {
     res.status(401).json({ error: 'Invalid refresh token' })
   }
+}
+
+export async function logout(req: AuthRequest, res: Response) {
+  if (req.user) {
+    await prisma.user.update({
+      where: { id: req.user.id },
+      data: { tokenVersion: { increment: 1 } },
+    }).catch((e: Error) => console.error('[auth] tokenVersion increment failed:', e.message))
+  }
+  clearRefreshCookie(res)
+  res.json({ ok: true })
 }
 
 export async function me(req: AuthRequest, res: Response) {

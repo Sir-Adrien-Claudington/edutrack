@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 import api from '../../api/client'
+import { getToken } from '../../api/token'
 
 interface StudentStat {
   studentId: string; studentName: string; averageScore: number | null
@@ -39,7 +40,7 @@ export default function Analytics({ classroomId: propId }: { classroomId?: strin
   }
 
   async function exportCSV() {
-    const token = localStorage.getItem('access_token')
+    const token = getToken()
     const base = (import.meta.env.VITE_API_URL ?? 'http://localhost:4000') as string
     const res = await fetch(`${base}/api/export/classroom/${classroomId}/csv`, {
       headers: { Authorization: `Bearer ${token}` },

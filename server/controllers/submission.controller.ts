@@ -95,7 +95,7 @@ export async function submitAssignment(req: AuthRequest, res: Response) {
       isResubmission ? 'A student resubmitted work' : 'New submission received',
       `${student?.name ?? 'A student'} ${isResubmission ? 'resubmitted' : 'submitted'} "${assignment.title}".`,
       `/teacher/submission/${submission.id}`,
-    ).catch(() => {})
+    ).catch((e: Error) => console.error('[notification] teacher submission alert failed:', e.message))
   }
 
   // Notify student their assignment was graded (for auto-graded submissions)
@@ -106,7 +106,7 @@ export async function submitAssignment(req: AuthRequest, res: Response) {
       'Your assignment was graded',
       `Your submission for "${assignment.title}" has been graded.`,
       `/student/submission/${submission.id}`,
-    ).catch(() => {})
+    ).catch((e: Error) => console.error('[notification] student graded alert failed:', e.message))
   }
 
   // Fire plagiarism check async (fire and forget)
@@ -234,7 +234,7 @@ export async function teacherGrade(req: AuthRequest, res: Response) {
     'Your assignment was graded',
     `Your submission for "${submission.assignment.title}" has been graded. Score: ${totalScore.toFixed(0)}%`,
     `/student/submission/${id}`,
-  ).catch(() => {})
+  ).catch((e: Error) => console.error('[notification] teacher grade alert failed:', e.message))
 
   res.json({ ok: true, totalScore })
 }
