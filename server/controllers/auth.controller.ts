@@ -72,7 +72,7 @@ export async function login(req: Request, res: Response) {
     const matchingClass = user.enrollments.find((e) => e.classroom.classCode === classCode)
     if (!matchingClass) {
       logger.warn(
-        { event: 'LOGIN_FAILED', username },
+        { event: 'LOGIN_FAILED' },
         'login failed: invalid username or class code'
       )
       res.status(401).json({ error: 'Invalid username or class code' })
@@ -106,7 +106,7 @@ export async function login(req: Request, res: Response) {
   const valid = await bcrypt.compare(password, user.passwordHash)
   if (!valid) {
     logger.warn(
-      { event: 'LOGIN_FAILED', email: email.toLowerCase().trim() },
+      { event: 'LOGIN_FAILED', emailDomain: email.split('@')[1] ?? 'unknown' },
       'login failed: invalid password'
     )
     res.status(401).json({ error: 'Invalid credentials' })
