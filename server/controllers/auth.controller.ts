@@ -5,21 +5,7 @@ import jwt from 'jsonwebtoken'
 import { prisma } from '../prisma/client.js'
 import { logger } from '../lib/logger.js'
 import { setRefreshCookie, clearRefreshCookie } from './auth.cookie.js'
-
-function generateTokens(user: { id: string; role: string; email?: string | null; tokenVersion?: number }) {
-  const tv = user.tokenVersion ?? 0
-  const access = jwt.sign(
-    { id: user.id, role: user.role, email: user.email ?? '', tv },
-    process.env.JWT_SECRET!,
-    { expiresIn: '15m' }
-  )
-  const refresh = jwt.sign(
-    { id: user.id, tv },
-    process.env.JWT_REFRESH_SECRET!,
-    { expiresIn: '30d' }
-  )
-  return { access, refresh }
-}
+import { generateTokens } from '../lib/tokens.js'
 
 function validatePassword(password: string): string | null {
   if (password.length < 8) return 'Password must be at least 8 characters'

@@ -2,10 +2,8 @@ import { Router } from 'express'
 import jwt from 'jsonwebtoken'
 import { authenticate } from '../middleware/auth.js'
 import { getAuthUrl, exchangeCode } from '../services/google.service.js'
-import { PrismaClient } from '@prisma/client'
+import { prisma } from '../prisma/client.js'
 import { logger } from '../lib/logger.js'
-
-const prisma = new PrismaClient()
 const router = Router()
 
 // GET /api/google/status

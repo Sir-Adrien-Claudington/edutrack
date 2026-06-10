@@ -1,7 +1,6 @@
 import { Response } from 'express'
 import { prisma } from '../prisma/client.js'
 import type { AuthRequest } from '../middleware/auth.js'
-import { createNotification } from './notification.controller.js'
 
 const DEFAULT_SETTINGS = [
   { key: 'aiEnabled',                    value: 'true'  },
@@ -45,11 +44,17 @@ export async function createAnnouncement(req: AuthRequest, res: Response) {
   })
   res.status(201).json(ann)
 
-  // Notify all users asynchronously
+  // Notify all users in bulk
   const users = await prisma.user.findMany({ select: { id: true } })
-  await Promise.all(users.map(u =>
-    createNotification(u.id, 'ANNOUNCEMENT', 'Announcement', message)
-  ))
+  await prisma.notification.createMany({
+    data: users.map(u => ({
+      userId: u.id,
+      type: 'ANNOUNCEMENT' as const,
+      title: 'Announcement',
+      message,
+    })),
+    skipDuplicates: true,
+  })
 }
 
 export async function toggleAnnouncement(req: AuthRequest, res: Response) {

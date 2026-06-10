@@ -7,11 +7,12 @@ export async function getAuditLog(req: AuthRequest, res: Response) {
   const where: any = {}
   if (action) where.action = action
   if (adminId) where.adminId = adminId
+  const safeLimit = Math.min(Number(limit) || 100, 500)
 
   const logs = await prisma.auditLog.findMany({
     where,
     orderBy: { createdAt: 'desc' },
-    take: Number(limit),
+    take: safeLimit,
     include: { admin: { select: { id: true, name: true, email: true } } },
   })
   res.json(logs)

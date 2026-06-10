@@ -2,22 +2,11 @@ import { Response } from 'express'
 import { createRequire } from 'module'
 import QRCode from 'qrcode'
 const { authenticator } = createRequire(import.meta.url)('otplib') as { authenticator: typeof import('otplib').authenticator }
-import jwt from 'jsonwebtoken'
 import type { AuthRequest } from '../middleware/auth.js'
 import { prisma } from '../prisma/client.js'
 import { logger } from '../lib/logger.js'
 import { setRefreshCookie } from './auth.cookie.js'
-
-function generateTokens(user: { id: string; role: string; email?: string | null; tokenVersion?: number }) {
-  const tv = user.tokenVersion ?? 0
-  const access = jwt.sign(
-    { id: user.id, role: user.role, email: user.email ?? '', tv },
-    process.env.JWT_SECRET!,
-    { expiresIn: '15m' },
-  )
-  const refresh = jwt.sign({ id: user.id, tv }, process.env.JWT_REFRESH_SECRET!, { expiresIn: '30d' })
-  return { access, refresh }
-}
+import { generateTokens } from '../lib/tokens.js'
 
 // GET /api/auth/mfa/setup — generate TOTP secret and QR code, save (disabled) secret to DB
 export async function setupMfa(req: AuthRequest, res: Response) {

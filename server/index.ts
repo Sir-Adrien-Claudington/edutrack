@@ -1,6 +1,6 @@
 import * as Sentry from '@sentry/node'
 import dotenv from 'dotenv'
-import { PrismaClient } from '@prisma/client'
+import { prisma } from './prisma/client.js'
 import { createCalendarEvent } from './services/google.service.js'
 import { createApp } from './app.js'
 import { logger } from './lib/logger.js'
@@ -35,7 +35,6 @@ app.listen(PORT, () => {
 
 export default app
 
-const prismaScheduler = new PrismaClient()
 
 function startReminderScheduler() {
   runDailyReminders()
@@ -51,9 +50,9 @@ async function runDataRetentionPurge() {
     const oneYearAgo = new Date(now.getTime() - 365 * 24 * 60 * 60 * 1000)
 
     const [notifs, auditLogs, messages] = await Promise.all([
-      prismaScheduler.notification.deleteMany({ where: { createdAt: { lt: ninetyDaysAgo } } }),
-      prismaScheduler.auditLog.deleteMany({ where: { createdAt: { lt: oneYearAgo } } }),
-      prismaScheduler.message.deleteMany({ where: { createdAt: { lt: oneYearAgo } } }),
+      prisma.notification.deleteMany({ where: { createdAt: { lt: ninetyDaysAgo } } }),
+      prisma.auditLog.deleteMany({ where: { createdAt: { lt: oneYearAgo } } }),
+      prisma.message.deleteMany({ where: { createdAt: { lt: oneYearAgo } } }),
     ])
 
     if (notifs.count || auditLogs.count || messages.count) {
@@ -69,18 +68,18 @@ async function runDailyReminders() {
     const now = new Date()
     const in48h = new Date(now.getTime() + 48 * 60 * 60 * 1000)
 
-    const upcoming = await prismaScheduler.assignment.findMany({
+    const upcoming = await prisma.assignment.findMany({
       where: { status: 'PUBLISHED', dueDate: { gte: now, lte: in48h } },
       include: { classroom: { include: { enrollments: { select: { studentId: true } } } } },
     })
 
     for (const assignment of upcoming) {
       for (const { studentId } of assignment.classroom.enrollments) {
-        const already = await prismaScheduler.notification.findFirst({
+        const already = await prisma.notification.findFirst({
           where: { userId: studentId, type: 'ASSIGNMENT_REMINDER', message: { contains: assignment.id } },
         })
         if (already) continue
-        await prismaScheduler.notification.create({
+        await prisma.notification.create({
           data: {
             userId: studentId,
             type: 'ASSIGNMENT_REMINDER',
@@ -89,7 +88,7 @@ async function runDailyReminders() {
             link: `/student/assignment/${assignment.id}`,
           },
         })
-        prismaScheduler.user.findUnique({
+        prisma.user.findUnique({
           where: { id: studentId },
           select: { googleCalendarLinked: true, googleAccessToken: true, googleRefreshToken: true, googleTokenExpiry: true },
         }).then(student => {
@@ -104,7 +103,7 @@ async function runDailyReminders() {
     }
 
     const dayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000)
-    const justOverdue = await prismaScheduler.assignment.findMany({
+    const justOverdue = await prisma.assignment.findMany({
       where: { status: 'PUBLISHED', dueDate: { gte: dayAgo, lt: now } },
       include: {
         classroom: { select: { teacherId: true, enrollments: { select: { studentId: true } } } },
@@ -116,11 +115,11 @@ async function runDailyReminders() {
       const submittedIds = new Set(assignment.submissions.map(s => s.studentId))
       const missingCount = assignment.classroom.enrollments.filter(e => !submittedIds.has(e.studentId)).length
       if (missingCount === 0) continue
-      const already = await prismaScheduler.notification.findFirst({
+      const already = await prisma.notification.findFirst({
         where: { userId: assignment.classroom.teacherId, type: 'LATE_SUBMISSIONS', title: assignment.id },
       })
       if (already) continue
-      await prismaScheduler.notification.create({
+      await prisma.notification.create({
         data: {
           userId: assignment.classroom.teacherId,
           type: 'LATE_SUBMISSIONS',

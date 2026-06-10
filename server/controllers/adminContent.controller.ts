@@ -2,6 +2,7 @@ import { Response } from 'express'
 import { prisma } from '../prisma/client.js'
 import type { AuthRequest } from '../middleware/auth.js'
 import { createNotification } from './notification.controller.js'
+import { logger } from '../lib/logger.js'
 
 async function audit(adminId: string, action: string, target?: string, details?: object) {
   await prisma.auditLog.create({ data: { adminId, action, target, details } })
@@ -56,7 +57,7 @@ export async function overrideGrade(req: AuthRequest, res: Response) {
       'Your assignment was graded',
       `Your submission for "${submission.assignment.title}" has been graded.`,
       `/student/submission/${id}`,
-    ).catch((e: Error) => console.error('[adminContent] notification failed:', e.message))
+    ).catch((e: Error) => logger.error({ err: e.message }, '[adminContent] notification failed'))
   }
 }
 

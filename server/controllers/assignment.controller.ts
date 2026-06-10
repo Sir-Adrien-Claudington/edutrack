@@ -3,6 +3,7 @@ import { prisma } from '../prisma/client.js'
 import { AuthRequest } from '../middleware/auth.js'
 import { createNotification } from './notification.controller.js'
 import { createCalendarEvent } from '../services/google.service.js'
+import { logger } from '../lib/logger.js'
 
 export async function createAssignment(req: AuthRequest, res: Response) {
   const { classroomId, title, instructions, type, dueDate, totalPoints, timeLimit, questions, subject, unitName, resubmissionsAllowed, maxResubmissions } = req.body
@@ -56,7 +57,7 @@ export async function createAssignment(req: AuthRequest, res: Response) {
           { title: assignment.title, description: 'Assignment due date', dueDate: assignment.dueDate! },
         )
       }
-    }).catch((e: Error) => console.warn('[assignment] calendar sync failed (non-critical):', e.message))
+    }).catch((e: Error) => logger.warn({ err: e.message }, '[assignment] calendar sync failed (non-critical)'))
   }
 }
 

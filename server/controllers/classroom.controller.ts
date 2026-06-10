@@ -167,6 +167,10 @@ export async function updateStudent(req: AuthRequest, res: Response) {
   if (!classroom || classroom.teacherId !== req.user!.id) {
     res.status(403).json({ error: 'Forbidden' }); return
   }
+  const enrollment = await prisma.enrollment.findUnique({
+    where: { studentId_classroomId: { studentId: req.params.studentId, classroomId: req.params.id } },
+  })
+  if (!enrollment) { res.status(404).json({ error: 'Student not found in this classroom' }); return }
 
   const student = await prisma.user.update({
     where: { id: req.params.studentId },
@@ -190,6 +194,10 @@ export async function removeStudent(req: AuthRequest, res: Response) {
   }
   const student = await prisma.user.findUnique({ where: { id: req.params.studentId } })
   if (!student) { res.status(404).json({ error: 'Student not found' }); return }
+  const enrollment = await prisma.enrollment.findUnique({
+    where: { studentId_classroomId: { studentId: student.id, classroomId: req.params.id } },
+  })
+  if (!enrollment) { res.status(404).json({ error: 'Student not found in this classroom' }); return }
 
   if (student.teacherCreated) {
     await prisma.$transaction(async tx => {

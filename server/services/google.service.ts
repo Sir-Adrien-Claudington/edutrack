@@ -1,8 +1,6 @@
 import { google } from 'googleapis'
-import { PrismaClient } from '@prisma/client'
+import { prisma } from '../prisma/client.js'
 import { logger } from '../lib/logger.js'
-
-const prisma = new PrismaClient()
 
 function makeClient() {
   return new google.auth.OAuth2(

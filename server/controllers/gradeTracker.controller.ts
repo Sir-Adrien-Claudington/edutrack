@@ -165,6 +165,10 @@ export async function getStudentGradeDetail(req: AuthRequest, res: Response) {
 export async function saveComment(req: AuthRequest, res: Response) {
   const { studentId } = req.params
   const { strengths, weaknesses, notes } = req.body
+  const enrolled = await prisma.enrollment.findFirst({
+    where: { studentId, classroom: { teacherId: req.user!.id } },
+  })
+  if (!enrolled) { res.status(403).json({ error: 'Forbidden' }); return }
   const comment = await prisma.studentComment.upsert({
     where: { studentId_teacherId: { studentId, teacherId: req.user!.id } },
     create: { studentId, teacherId: req.user!.id, strengths, weaknesses, notes },
@@ -183,7 +187,7 @@ export async function curveSubmissions(req: AuthRequest, res: Response) {
 
   const submissions = await prisma.submission.findMany({
     where: scope === 'assignment'
-      ? { assignmentId }
+      ? { assignmentId, assignment: { classroomId } }
       : { assignment: { classroomId } },
     select: { id: true, totalScore: true, curvedScore: true },
   })
@@ -203,10 +207,12 @@ export async function curveSubmissions(req: AuthRequest, res: Response) {
     return { id: sub.id, curvedScore: Math.round(newScore * 10) / 10, curveNote }
   })
 
-  await Promise.all(updates.map(u => prisma.submission.update({
-    where: { id: u.id },
-    data: { curvedScore: u.curvedScore, curveNote: u.curveNote },
-  })))
+  await prisma.$transaction(
+    updates.map(u => prisma.submission.update({
+      where: { id: u.id },
+      data: { curvedScore: u.curvedScore, curveNote: u.curveNote },
+    }))
+  )
 
   res.json({ updated: updates.length, updates })
 }
@@ -214,7 +220,10 @@ export async function curveSubmissions(req: AuthRequest, res: Response) {
 export async function resetCurve(req: AuthRequest, res: Response) {
   const { submissionIds } = req.body
   await prisma.submission.updateMany({
-    where: { id: { in: submissionIds } },
+    where: {
+      id: { in: submissionIds },
+      assignment: { classroom: { teacherId: req.user!.id } },
+    },
     data: { curvedScore: null, curveNote: null },
   })
   res.json({ ok: true })

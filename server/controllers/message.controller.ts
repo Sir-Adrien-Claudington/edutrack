@@ -37,6 +37,14 @@ export async function getMyMessages(req: AuthRequest, res: Response) {
 
 export async function getClassroomMessages(req: AuthRequest, res: Response) {
   const { classroomId } = req.params
+  const classroom = await prisma.classroom.findUnique({ where: { id: classroomId } })
+  const isTeacher = classroom?.teacherId === req.user!.id
+  const isEnrolled = !isTeacher && !!await prisma.enrollment.findFirst({
+    where: { classroomId, studentId: req.user!.id },
+  })
+  if (!classroom || (!isTeacher && !isEnrolled)) {
+    res.status(403).json({ error: 'Forbidden' }); return
+  }
   const messages = await prisma.message.findMany({
     where: { classroomId, recipientId: null },
     include: { sender: { select: { id: true, name: true, role: true } } },
