@@ -181,7 +181,7 @@ export async function curveSubmissions(req: AuthRequest, res: Response) {
     res.status(403).json({ error: 'Forbidden' }); return
   }
 
-  let submissions = await prisma.submission.findMany({
+  const submissions = await prisma.submission.findMany({
     where: scope === 'assignment'
       ? { assignmentId }
       : { assignment: { classroomId } },

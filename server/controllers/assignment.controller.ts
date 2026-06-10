@@ -56,7 +56,7 @@ export async function createAssignment(req: AuthRequest, res: Response) {
           { title: assignment.title, description: 'Assignment due date', dueDate: assignment.dueDate! },
         )
       }
-    }).catch(() => {})
+    }).catch((e: Error) => console.warn('[assignment] calendar sync failed (non-critical):', e.message))
   }
 }
 

@@ -3,9 +3,11 @@ import bcrypt from 'bcryptjs'
 import { randomBytes } from 'crypto'
 import { prisma } from '../prisma/client.js'
 import type { AuthRequest } from '../middleware/auth.js'
+import { logger } from '../lib/logger.js'
 
 async function audit(adminId: string, action: string, target?: string, details?: object) {
-  await prisma.auditLog.create({ data: { adminId, action, target, details } }).catch(() => {})
+  await prisma.auditLog.create({ data: { adminId, action, target, details } })
+    .catch((e: Error) => logger.warn({ err: e.message }, '[audit] auditLog write failed'))
 }
 
 

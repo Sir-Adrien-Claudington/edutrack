@@ -4,7 +4,7 @@ import { useAuthStore } from '../../store/auth.store'
 
 const PW_RULES = [
   { label: 'At least 8 characters', test: (p: string) => p.length >= 8 },
-  { label: 'Contains a number or special character (!@#$…)', test: (p: string) => /[0-9!@#$%^&*()\-_=+\[\]{};':"\\|,.<>/?`~]/.test(p) },
+  { label: 'Contains a number or special character (!@#$…)', test: (p: string) => /[0-9!@#$%^&*()\-_=+[\]{};':"\\|,.<>/?`~]/.test(p) },
 ]
 
 function CheckIcon({ ok, touched }: { ok: boolean; touched: boolean }) {

@@ -56,7 +56,7 @@ export async function overrideGrade(req: AuthRequest, res: Response) {
       'Your assignment was graded',
       `Your submission for "${submission.assignment.title}" has been graded.`,
       `/student/submission/${id}`,
-    ).catch(() => {})
+    ).catch((e: Error) => console.error('[adminContent] notification failed:', e.message))
   }
 }
 

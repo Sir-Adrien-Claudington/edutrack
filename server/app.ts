@@ -1,4 +1,5 @@
 import * as Sentry from '@sentry/node'
+import { randomUUID } from 'crypto'
 import express from 'express'
 import cors from 'cors'
 import helmet from 'helmet'
@@ -44,7 +45,7 @@ export function createApp() {
       directives: {
         defaultSrc: ["'self'"],
         scriptSrc: ["'self'"],
-        styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
+        styleSrc: ["'self'", 'https://fonts.googleapis.com'],
         fontSrc: ["'self'", 'https://fonts.gstatic.com'],
         imgSrc: ["'self'", 'data:', 'https:'],
         connectSrc: ["'self'", 'https:'],
@@ -68,7 +69,15 @@ export function createApp() {
     allowedHeaders: ['Content-Type', 'Authorization'],
   }))
 
-  app.use(pinoHttp({ logger }))
+  app.use(pinoHttp({
+    logger,
+    redact: { paths: ['req.headers.authorization', 'req.headers.cookie'], censor: '[REDACTED]' },
+    genReqId: (req, res) => {
+      const id = (req.headers['x-request-id'] as string) ?? randomUUID()
+      res.setHeader('X-Request-ID', id)
+      return id
+    },
+  }))
   app.use(cookieParser())
   app.use(express.json({ limit: '1mb' }))
 

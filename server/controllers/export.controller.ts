@@ -28,8 +28,9 @@ export async function exportClassroomCSV(req: AuthRequest, res: Response) {
     ]),
   ]
   const csv = rows.map(r => r.map(v => `"${String(v).replace(/"/g, '""')}"`).join(',')).join('\n')
+  const safeName = (s: string) => s.replace(/[^\w\s\-.]/g, '').replace(/\s+/g, '_').slice(0, 50)
   res.setHeader('Content-Type', 'text/csv')
-  res.setHeader('Content-Disposition', `attachment; filename="${classroom.name}-report.csv"`)
+  res.setHeader('Content-Disposition', `attachment; filename="${safeName(classroom.name)}-report.csv"`)
   res.send(csv)
 }
 
@@ -60,8 +61,9 @@ export async function exportStudentReport(req: AuthRequest, res: Response) {
     ]),
   ]
   const csv = rows.map(r => r.map(v => `"${String(v).replace(/"/g, '""')}"`).join(',')).join('\n')
+  const safeName = (s: string) => s.replace(/[^\w\s\-.]/g, '').replace(/\s+/g, '_').slice(0, 50)
   res.setHeader('Content-Type', 'text/csv')
-  res.setHeader('Content-Disposition', `attachment; filename="${student.name}-report.csv"`)
+  res.setHeader('Content-Disposition', `attachment; filename="${safeName(student.name)}-report.csv"`)
   res.send(csv)
 }
 
@@ -135,8 +137,9 @@ export async function exportStudentPDF(req: AuthRequest, res: Response) {
   }) : null
 
   const doc = new PDFDocument({ margin: 50, size: 'A4' })
+  const safeFileName = (s: string) => s.replace(/[^\w\s\-.]/g, '').replace(/\s+/g, '_').slice(0, 50)
   res.setHeader('Content-Type', 'application/pdf')
-  res.setHeader('Content-Disposition', `attachment; filename="${student.name.replace(/\s+/g, '_')}_Report.pdf"`)
+  res.setHeader('Content-Disposition', `attachment; filename="${safeFileName(student.name)}_Report.pdf"`)
   doc.pipe(res)
 
   const W = 495

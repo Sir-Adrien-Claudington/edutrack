@@ -159,7 +159,7 @@ export default function Users() {
 
   return (
     <AdminLayout>
-      <div className="p-8">
+      <div className="p-4 sm:p-8">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div>
@@ -175,7 +175,7 @@ export default function Users() {
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-4 gap-4 mb-6">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
           {[
             { label: 'Total Users',  value: totalUsers,     colour: 'text-gray-900 dark:text-white' },
             { label: 'Teachers',     value: teacherCount,   colour: 'text-blue-600 dark:text-blue-400' },

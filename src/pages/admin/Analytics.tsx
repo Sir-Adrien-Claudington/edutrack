@@ -66,14 +66,14 @@ export default function Analytics() {
 
   return (
     <AdminLayout>
-      <div className="p-8">
+      <div className="p-4 sm:p-8">
         <div className="mb-6">
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Analytics & Reports</h1>
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">Platform-wide activity and statistics</p>
         </div>
 
         {/* Stat cards */}
-        <div className="grid grid-cols-3 gap-4 mb-6">
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-6">
           {[
             { label: 'Teachers',    value: teacherCount,                colour: 'text-blue-600 dark:text-blue-400' },
             { label: 'Students',    value: studentCount,                colour: 'text-teal-600 dark:text-teal-400' },
@@ -89,7 +89,7 @@ export default function Analytics() {
           ))}
         </div>
 
-        <div className="grid grid-cols-2 gap-6 mb-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
           {/* Bar chart */}
           <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5">
             <h2 className="text-sm font-semibold text-gray-900 dark:text-white mb-4">Classrooms — Students & Assignments</h2>
@@ -126,7 +126,7 @@ export default function Analytics() {
         </div>
 
         {/* Recent signups */}
-        <div className="grid grid-cols-2 gap-6 mb-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
           <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5">
             <h2 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">Recent Signups</h2>
             <div className="space-y-2">

@@ -16,7 +16,7 @@ Sentry.init({
 })
 
 if (process.env.NODE_ENV === 'production') {
-  const required = ['DATABASE_URL', 'JWT_SECRET', 'JWT_REFRESH_SECRET', 'ANTHROPIC_API_KEY', 'CORS_ORIGIN', 'FRONTEND_URL']
+  const required = ['DATABASE_URL', 'JWT_SECRET', 'JWT_REFRESH_SECRET', 'ANTHROPIC_API_KEY', 'CORS_ORIGIN', 'FRONTEND_URL', 'GOOGLE_CLIENT_ID', 'GOOGLE_CLIENT_SECRET', 'GOOGLE_REDIRECT_URI']
   const missing = required.filter(key => !process.env[key])
   if (missing.length > 0) {
     logger.error({ missing }, 'Missing required production env vars')

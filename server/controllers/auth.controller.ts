@@ -24,7 +24,7 @@ function generateTokens(user: { id: string; role: string; email?: string | null;
 function validatePassword(password: string): string | null {
   if (password.length < 8) return 'Password must be at least 8 characters'
   if (password.length > 128) return 'Password too long (max 128 characters)'
-  if (!/[0-9!@#$%^&*()\-_=+\[\]{};':"\\|,.<>/?`~]/.test(password))
+  if (!/[0-9!@#$%^&*()\\-_=+[\]{};':"\\|,.<>/?`~]/.test(password))
     return 'Password must contain at least one number or special character'
   return null
 }
@@ -169,4 +169,14 @@ export async function me(req: AuthRequest, res: Response) {
     select: { id: true, email: true, name: true, role: true, createdAt: true, mfaEnabled: true },
   })
   res.json(user)
+}
+
+export async function deleteOwnAccount(req: AuthRequest, res: Response) {
+  const userId = req.user!.id
+  // Increment tokenVersion first to invalidate all existing sessions
+  await prisma.user.update({ where: { id: userId }, data: { tokenVersion: { increment: 1 } } })
+    .catch((e: Error) => logger.error({ err: e.message }, '[auth] tokenVersion increment on delete failed'))
+  await prisma.user.delete({ where: { id: userId } })
+  clearRefreshCookie(res)
+  res.json({ ok: true })
 }

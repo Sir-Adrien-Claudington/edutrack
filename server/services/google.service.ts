@@ -53,7 +53,9 @@ export async function createCalendarEvent(
             ...(tokens.expiry_date ? { googleTokenExpiry: new Date(tokens.expiry_date) } : {}),
           },
         })
-      } catch {}
+      } catch (e: any) {
+        logger.warn({ err: e?.message }, '[google] failed to persist refreshed OAuth token')
+      }
     })
 
     const calendar = google.calendar({ version: 'v3', auth: client })
