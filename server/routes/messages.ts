@@ -1,6 +1,12 @@
 import { Router } from 'express'
 import { authenticate } from '../middleware/auth.js'
-import { sendMessage, getMyMessages, getClassroomMessages, markRead, getUnreadCount } from '../controllers/message.controller.js'
+import {
+  sendMessage,
+  getMyMessages,
+  getClassroomMessages,
+  markRead,
+  getUnreadCount,
+} from '../controllers/message.controller.js'
 
 const router = Router()
 

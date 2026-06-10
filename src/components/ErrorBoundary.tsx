@@ -1,8 +1,13 @@
 import { Component } from 'react'
 import type { ReactNode } from 'react'
 
-interface Props { children: ReactNode }
-interface State { hasError: boolean; message: string }
+interface Props {
+  children: ReactNode
+}
+interface State {
+  hasError: boolean
+  message: string
+}
 
 export default class ErrorBoundary extends Component<Props, State> {
   state: State = { hasError: false, message: '' }
@@ -18,8 +23,7 @@ export default class ErrorBoundary extends Component<Props, State> {
           <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl p-8 max-w-md w-full text-center">
             <p className="text-2xl mb-2">Something went wrong</p>
             <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">{this.state.message}</p>
-            <button onClick={() => window.location.reload()}
-              className="btn-3d-indigo px-5">
+            <button onClick={() => window.location.reload()} className="btn-3d-indigo px-5">
               Reload page
             </button>
           </div>

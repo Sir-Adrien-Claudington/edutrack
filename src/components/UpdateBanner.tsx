@@ -34,7 +34,10 @@ export default function UpdateBanner() {
 
     checkVersion()
     const id = setInterval(checkVersion, POLL_INTERVAL_MS)
-    return () => { cancelled = true; clearInterval(id) }
+    return () => {
+      cancelled = true
+      clearInterval(id)
+    }
   }, [knownVersion])
 
   if (!updateReady) return null

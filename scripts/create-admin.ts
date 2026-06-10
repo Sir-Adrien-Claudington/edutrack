@@ -9,10 +9,15 @@ const name = process.argv[4] ?? 'Admin'
 
 const existing = await prisma.user.findUnique({ where: { email } })
 if (existing) {
-  await prisma.user.update({ where: { email }, data: { role: 'ADMIN', passwordHash: await bcrypt.hash(password, 12), name } })
+  await prisma.user.update({
+    where: { email },
+    data: { role: 'ADMIN', passwordHash: await bcrypt.hash(password, 12), name },
+  })
   console.log(`Updated existing user ${email} to ADMIN`)
 } else {
-  await prisma.user.create({ data: { email, passwordHash: await bcrypt.hash(password, 12), name, role: 'ADMIN' } })
+  await prisma.user.create({
+    data: { email, passwordHash: await bcrypt.hash(password, 12), name, role: 'ADMIN' },
+  })
   console.log(`Created admin account: ${email}`)
 }
 

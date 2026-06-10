@@ -4,20 +4,20 @@
 
 ## Automated purges (scheduler runs daily)
 
-| Data type | Retention period | Action |
-|---|---|---|
-| Notifications | 90 days | Auto-deleted by scheduler |
+| Data type        | Retention period  | Action                    |
+| ---------------- | ----------------- | ------------------------- |
+| Notifications    | 90 days           | Auto-deleted by scheduler |
 | AuditLog entries | 1 year (365 days) | Auto-deleted by scheduler |
-| Messages | 1 year (365 days) | Auto-deleted by scheduler |
+| Messages         | 1 year (365 days) | Auto-deleted by scheduler |
 
 ## Manual / request-based deletion
 
-| Scenario | Who can act | How |
-|---|---|---|
-| User deletes own account | User (via settings) | Cascades to submissions, notifications, grades |
-| Admin deletes a user | ADMIN role | Admin panel → Users → Delete |
-| Teacher deletes a classroom | TEACHER role | Classroom settings → Archive / Delete |
-| Student requests data erasure | User → admin | Admin deletes user record |
+| Scenario                      | Who can act         | How                                            |
+| ----------------------------- | ------------------- | ---------------------------------------------- |
+| User deletes own account      | User (via settings) | Cascades to submissions, notifications, grades |
+| Admin deletes a user          | ADMIN role          | Admin panel → Users → Delete                   |
+| Teacher deletes a classroom   | TEACHER role        | Classroom settings → Archive / Delete          |
+| Student requests data erasure | User → admin        | Admin deletes user record                      |
 
 ## Data held indefinitely
 
@@ -35,6 +35,7 @@ The following is retained until explicitly deleted:
 ## On account deletion
 
 When a user is deleted, Prisma cascades remove:
+
 - Enrollments
 - Submissions + answers + feedback
 - Notifications
@@ -42,6 +43,7 @@ When a user is deleted, Prisma cascades remove:
 - Google OAuth tokens
 
 Items NOT automatically removed on user delete (teacher-owned):
+
 - Assignments, classrooms, rubrics — must be explicitly deleted
 
 ## Review schedule

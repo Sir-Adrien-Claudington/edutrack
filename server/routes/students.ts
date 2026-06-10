@@ -1,10 +1,16 @@
 import { Router } from 'express'
 import { authenticate, requireRole } from '../middleware/auth.js'
 import {
-  getParentContacts, addParentContact, deleteParentContact,
+  getParentContacts,
+  addParentContact,
+  deleteParentContact,
   getStudentTimeline,
-  getClassroomEngagement, getAtRiskStudents,
-  getInterventions, getAllInterventions, upsertIntervention, deleteIntervention,
+  getClassroomEngagement,
+  getAtRiskStudents,
+  getInterventions,
+  getAllInterventions,
+  upsertIntervention,
+  deleteIntervention,
 } from '../controllers/students.controller.js'
 
 const router = Router()

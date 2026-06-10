@@ -10,7 +10,7 @@ export async function getStudentProgress(studentId: string) {
     orderBy: { submittedAt: 'asc' },
   })
 
-  const scores = submissions.map(s => ({
+  const scores = submissions.map((s) => ({
     date: s.submittedAt,
     score: s.totalScore ?? 0,
     title: s.assignment.title,
@@ -35,7 +35,7 @@ export async function getStudentProgress(studentId: string) {
     .slice(0, 5)
     .map(([tag, v]) => ({ tag, errorRate: Math.round((v.wrong / v.total) * 100) }))
 
-  const trend = calculateTrend(scores.map(s => s.score))
+  const trend = calculateTrend(scores.map((s) => s.score))
 
   return { scores, weakAreas, trend, totalSubmissions: submissions.length }
 }
@@ -71,9 +71,11 @@ export async function getClassroomAnalytics(classroomId: string) {
     },
   })
 
-  const studentStats = enrollments.map(e => {
-    const subs = assignments.flatMap(a => a.submissions.filter(s => s.studentId === e.student.id))
-    const scores = subs.map(s => s.totalScore ?? 0)
+  const studentStats = enrollments.map((e) => {
+    const subs = assignments.flatMap((a) =>
+      a.submissions.filter((s) => s.studentId === e.student.id)
+    )
+    const scores = subs.map((s) => s.totalScore ?? 0)
     const avg = scores.length > 0 ? scores.reduce((a, b) => a + b, 0) / scores.length : null
     const trend = calculateTrend(scores)
 
@@ -102,16 +104,17 @@ export async function getClassroomAnalytics(classroomId: string) {
     }
   })
 
-  const classAvg = studentStats.filter(s => s.averageScore !== null)
-  const overallAvg = classAvg.length > 0
-    ? classAvg.reduce((a, b) => a + (b.averageScore ?? 0), 0) / classAvg.length
-    : null
+  const classAvg = studentStats.filter((s) => s.averageScore !== null)
+  const overallAvg =
+    classAvg.length > 0
+      ? classAvg.reduce((a, b) => a + (b.averageScore ?? 0), 0) / classAvg.length
+      : null
 
   return {
     studentStats,
     overallAverage: overallAvg ? Math.round(overallAvg * 10) / 10 : null,
     totalStudents: enrollments.length,
-    atRiskCount: studentStats.filter(s => s.atRisk).length,
+    atRiskCount: studentStats.filter((s) => s.atRisk).length,
     assignmentCount: assignments.length,
   }
 }

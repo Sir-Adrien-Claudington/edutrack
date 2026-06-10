@@ -15,7 +15,7 @@ interface StudentFeedbackInput {
 export async function generateStudentFeedback(input: StudentFeedbackInput): Promise<string> {
   const { firstName, assignmentTitle, score, totalPoints, weakTags, trend, rubricCriteria } = input
   const rubricSection = rubricCriteria?.length
-    ? `\nRubric criteria:\n${rubricCriteria.map(c => `- ${c.name} (${c.maxPoints} pts)${c.description ? ': ' + c.description : ''}`).join('\n')}`
+    ? `\nRubric criteria:\n${rubricCriteria.map((c) => `- ${c.name} (${c.maxPoints} pts)${c.description ? ': ' + c.description : ''}`).join('\n')}`
     : ''
   const prompt = `You are a supportive teacher giving feedback to a student.
 
@@ -44,7 +44,10 @@ interface ClassInsightInput {
 export async function generateClassInsight(input: ClassInsightInput): Promise<string> {
   const { classroomName, submissions } = input
   const summaries = submissions
-    .map(s => `${s.studentName}: ${s.score.toFixed(0)}%, weak areas: ${s.weakTags.join(', ') || 'none'}`)
+    .map(
+      (s) =>
+        `${s.studentName}: ${s.score.toFixed(0)}%, weak areas: ${s.weakTags.join(', ') || 'none'}`
+    )
     .join('\n')
 
   const prompt = `You are helping a teacher understand their class performance.

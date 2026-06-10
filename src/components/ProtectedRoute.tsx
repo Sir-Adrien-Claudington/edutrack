@@ -13,8 +13,8 @@ function homeFor(role: string) {
 }
 
 export default function ProtectedRoute({ children, role }: Props) {
-  const user = useAuthStore(s => s.user)
-  const loading = useAuthStore(s => s.loading)
+  const user = useAuthStore((s) => s.user)
+  const loading = useAuthStore((s) => s.loading)
 
   if (loading) {
     return (

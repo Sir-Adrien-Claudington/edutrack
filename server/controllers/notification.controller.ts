@@ -7,7 +7,7 @@ export async function createNotification(
   type: string,
   title: string,
   message: string,
-  link?: string,
+  link?: string
 ) {
   await prisma.notification.create({ data: { userId, type, title, message, link: link ?? null } })
 }
@@ -24,21 +24,29 @@ export async function getNotifications(req: AuthRequest, res: Response) {
 export async function markRead(req: AuthRequest, res: Response) {
   const notification = await prisma.notification.findUnique({ where: { id: req.params.id } })
   if (!notification || notification.userId !== req.user!.id) {
-    res.status(403).json({ error: 'Forbidden' }); return
+    res.status(403).json({ error: 'Forbidden' })
+    return
   }
-  const updated = await prisma.notification.update({ where: { id: req.params.id }, data: { read: true } })
+  const updated = await prisma.notification.update({
+    where: { id: req.params.id },
+    data: { read: true },
+  })
   res.json(updated)
 }
 
 export async function markAllRead(req: AuthRequest, res: Response) {
-  await prisma.notification.updateMany({ where: { userId: req.user!.id, read: false }, data: { read: true } })
+  await prisma.notification.updateMany({
+    where: { userId: req.user!.id, read: false },
+    data: { read: true },
+  })
   res.json({ ok: true })
 }
 
 export async function deleteNotification(req: AuthRequest, res: Response) {
   const notification = await prisma.notification.findUnique({ where: { id: req.params.id } })
   if (!notification || notification.userId !== req.user!.id) {
-    res.status(403).json({ error: 'Forbidden' }); return
+    res.status(403).json({ error: 'Forbidden' })
+    return
   }
   await prisma.notification.delete({ where: { id: req.params.id } })
   res.json({ ok: true })

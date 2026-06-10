@@ -21,11 +21,9 @@ router.get('/connect', authenticate, (req: any, res) => {
     res.status(503).json({ error: 'Google Calendar integration is not configured on this server.' })
     return
   }
-  const state = jwt.sign(
-    { userId: req.user!.id, role: req.user!.role },
-    process.env.JWT_SECRET!,
-    { expiresIn: '10m' },
-  )
+  const state = jwt.sign({ userId: req.user!.id, role: req.user!.role }, process.env.JWT_SECRET!, {
+    expiresIn: '10m',
+  })
   res.json({ url: getAuthUrl(state) })
 })
 

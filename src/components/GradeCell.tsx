@@ -10,7 +10,13 @@ interface Props {
   size?: 'sm' | 'md'
 }
 
-export default function GradeCell({ value, boundaries, readOnly = false, onChange, size = 'md' }: Props) {
+export default function GradeCell({
+  value,
+  boundaries,
+  readOnly = false,
+  onChange,
+  size = 'md',
+}: Props) {
   const grade = useMemo(() => getGrade(value, boundaries), [value, boundaries])
 
   const bg = grade?.colour ?? '#e5e7eb'
@@ -37,13 +43,20 @@ export default function GradeCell({ value, boundaries, readOnly = false, onChang
         min={0}
         max={100}
         value={value ?? ''}
-        onChange={e => onChange?.(e.target.value === '' ? null : Math.min(100, Math.max(0, Number(e.target.value))))}
+        onChange={(e) =>
+          onChange?.(
+            e.target.value === '' ? null : Math.min(100, Math.max(0, Number(e.target.value)))
+          )
+        }
         className={`w-20 rounded-lg border-0 font-medium text-center focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-indigo-400 ${padding}`}
         style={{ backgroundColor: bg, color: textColor }}
         placeholder="—"
       />
       {grade && (
-        <span className="absolute right-1.5 text-xs font-bold opacity-70" style={{ color: textColor }}>
+        <span
+          className="absolute right-1.5 text-xs font-bold opacity-70"
+          style={{ color: textColor }}
+        >
           {grade.label}
         </span>
       )}

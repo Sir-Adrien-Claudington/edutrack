@@ -39,25 +39,28 @@ export const useNotificationsStore = create<NotificationsState>((set, get) => ({
 
   markRead: async (id: string) => {
     await api.put(`/notifications/${id}/read`)
-    set(s => ({
-      notifications: s.notifications.map(n => n.id === id ? { ...n, read: true } : n),
-      unreadCount: Math.max(0, s.unreadCount - (s.notifications.find(n => n.id === id)?.read ? 0 : 1)),
+    set((s) => ({
+      notifications: s.notifications.map((n) => (n.id === id ? { ...n, read: true } : n)),
+      unreadCount: Math.max(
+        0,
+        s.unreadCount - (s.notifications.find((n) => n.id === id)?.read ? 0 : 1)
+      ),
     }))
   },
 
   markAllRead: async () => {
     await api.put('/notifications/read-all')
-    set(s => ({
-      notifications: s.notifications.map(n => ({ ...n, read: true })),
+    set((s) => ({
+      notifications: s.notifications.map((n) => ({ ...n, read: true })),
       unreadCount: 0,
     }))
   },
 
   deleteNotification: async (id: string) => {
     await api.delete(`/notifications/${id}`)
-    const wasUnread = !get().notifications.find(n => n.id === id)?.read
-    set(s => ({
-      notifications: s.notifications.filter(n => n.id !== id),
+    const wasUnread = !get().notifications.find((n) => n.id === id)?.read
+    set((s) => ({
+      notifications: s.notifications.filter((n) => n.id !== id),
       unreadCount: wasUnread ? Math.max(0, s.unreadCount - 1) : s.unreadCount,
     }))
   },

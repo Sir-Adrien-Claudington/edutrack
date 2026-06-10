@@ -1,11 +1,43 @@
 import { Router } from 'express'
 import { authenticate, requireRole } from '../middleware/auth.js'
-import { listUsers, createUser, updateUser, deleteUser, resetPassword, toggleSuspend } from '../controllers/admin.controller.js'
-import { listClassrooms, getClassroomStudents, toggleArchive, deleteClassroom, removeStudent } from '../controllers/adminClassrooms.controller.js'
-import { listAssignments, getSubmissions, overrideGrade, deleteAssignment, deleteSubmission } from '../controllers/adminContent.controller.js'
+import {
+  listUsers,
+  createUser,
+  updateUser,
+  deleteUser,
+  resetPassword,
+  toggleSuspend,
+} from '../controllers/admin.controller.js'
+import {
+  listClassrooms,
+  getClassroomStudents,
+  toggleArchive,
+  deleteClassroom,
+  removeStudent,
+} from '../controllers/adminClassrooms.controller.js'
+import {
+  listAssignments,
+  getSubmissions,
+  overrideGrade,
+  deleteAssignment,
+  deleteSubmission,
+} from '../controllers/adminContent.controller.js'
 import { getPlatformStats, getUsageStats } from '../controllers/adminAnalytics.controller.js'
-import { getSettings, updateSettings, listAnnouncements, createAnnouncement, toggleAnnouncement, deleteAnnouncement, getActiveAnnouncements } from '../controllers/adminPlatform.controller.js'
-import { getAuditLog, getUserLoginHistory, forceLogout, getAuditActions } from '../controllers/adminSecurity.controller.js'
+import {
+  getSettings,
+  updateSettings,
+  listAnnouncements,
+  createAnnouncement,
+  toggleAnnouncement,
+  deleteAnnouncement,
+  getActiveAnnouncements,
+} from '../controllers/adminPlatform.controller.js'
+import {
+  getAuditLog,
+  getUserLoginHistory,
+  forceLogout,
+  getAuditActions,
+} from '../controllers/adminSecurity.controller.js'
 
 const router = Router()
 

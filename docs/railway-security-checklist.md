@@ -9,6 +9,7 @@ Manual steps to verify in the Railway dashboard before and after every productio
 Log in to [Railway](https://railway.app) → select the staging service.
 
 ### Variables tab
+
 - [ ] `DATABASE_URL` points to the **staging** database, not production
 - [ ] `NODE_ENV` is set to `staging` (not `production`, not `development`)
 - [ ] `DEBUG` is `false`
@@ -23,6 +24,7 @@ Log in to [Railway](https://railway.app) → select the staging service.
 Log in to [Railway](https://railway.app) → select the production service.
 
 ### Variables tab
+
 - [ ] `NODE_ENV` = `production`
 - [ ] `DEBUG` = `false`
 - [ ] `DATABASE_URL` uses the production Neon database URL
@@ -33,10 +35,12 @@ Log in to [Railway](https://railway.app) → select the production service.
 - [ ] `GOOGLE_REDIRECT_URI` = `https://edutrack-production-2a6d.up.railway.app/api/google/callback`
 
 ### Build logs
+
 - [ ] No environment variable **values** are printed during the build (only variable names are acceptable)
 - [ ] No `console.log` statements output secrets or full connection strings
 
 ### Networking tab (Database service)
+
 - [ ] **Public Networking** is **disabled** on the Neon/database service
   - The app connects via Railway's private network (`${{Postgres.DATABASE_URL}}`)
   - Public access is only needed temporarily for local `prisma db push` — disable after use
@@ -50,6 +54,7 @@ Log in to [Railway](https://railway.app) → select the production service.
 3. Railway will GET `/health` after each deploy — a non-200 response rolls back automatically
 
 The `/health` endpoint returns:
+
 ```json
 { "status": "ok", "timestamp": "...", "environment": "production" }
 ```

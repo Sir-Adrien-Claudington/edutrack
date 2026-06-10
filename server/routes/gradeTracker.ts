@@ -1,6 +1,12 @@
 import { Router } from 'express'
 import { authenticate, requireRole } from '../middleware/auth.js'
-import { getClassroomGradeTracker, getStudentGradeDetail, saveComment, curveSubmissions, resetCurve } from '../controllers/gradeTracker.controller.js'
+import {
+  getClassroomGradeTracker,
+  getStudentGradeDetail,
+  saveComment,
+  curveSubmissions,
+  resetCurve,
+} from '../controllers/gradeTracker.controller.js'
 
 const router = Router()
 router.use(authenticate, requireRole('TEACHER'))

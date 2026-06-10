@@ -1,6 +1,10 @@
 import { Router } from 'express'
 import { authenticate, requireRole } from '../middleware/auth.js'
-import { studentProgress, classroomAnalytics, classInsight } from '../controllers/analytics.controller.js'
+import {
+  studentProgress,
+  classroomAnalytics,
+  classInsight,
+} from '../controllers/analytics.controller.js'
 
 const router = Router()
 

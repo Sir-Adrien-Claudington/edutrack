@@ -24,7 +24,9 @@ interface Seat {
 
 function DraggableStudent({ id, name }: { id: string; name: string }) {
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({ id })
-  const style = transform ? { transform: `translate(${transform.x}px, ${transform.y}px)` } : undefined
+  const style = transform
+    ? { transform: `translate(${transform.x}px, ${transform.y}px)` }
+    : undefined
   return (
     <div
       ref={setNodeRef}
@@ -43,9 +45,15 @@ function DraggableStudent({ id, name }: { id: string; name: string }) {
 }
 
 function DroppableDesk({
-  row, col, studentName, onClear,
+  row,
+  col,
+  studentName,
+  onClear,
 }: {
-  row: number; col: number; studentName: string | null; onClear: () => void
+  row: number
+  col: number
+  studentName: string | null
+  onClear: () => void
 }) {
   const { isOver, setNodeRef } = useDroppable({ id: `desk-${row}-${col}` })
   return (
@@ -55,8 +63,8 @@ function DroppableDesk({
         studentName
           ? 'bg-indigo-50 dark:bg-indigo-900/20 border-indigo-300 dark:border-indigo-700 text-indigo-700 dark:text-indigo-300'
           : isOver
-          ? 'bg-indigo-100 dark:bg-indigo-900/30 border-indigo-400 dark:border-indigo-600 border-dashed'
-          : 'bg-gray-50 dark:bg-gray-700/50 border-dashed border-gray-300 dark:border-gray-600 text-gray-400 dark:text-gray-500'
+            ? 'bg-indigo-100 dark:bg-indigo-900/30 border-indigo-400 dark:border-indigo-600 border-dashed'
+            : 'bg-gray-50 dark:bg-gray-700/50 border-dashed border-gray-300 dark:border-gray-600 text-gray-400 dark:text-gray-500'
       }`}
     >
       {studentName ? (
@@ -65,7 +73,9 @@ function DroppableDesk({
           <button
             onClick={onClear}
             className="absolute top-0.5 right-0.5 w-4 h-4 flex items-center justify-center text-indigo-400 hover:text-red-500 text-xs leading-none"
-          >×</button>
+          >
+            ×
+          </button>
         </>
       ) : (
         <span>+</span>
@@ -74,7 +84,13 @@ function DroppableDesk({
   )
 }
 
-export default function SeatingTab({ classroomId, students }: { classroomId: string; students: Student[] }) {
+export default function SeatingTab({
+  classroomId,
+  students,
+}: {
+  classroomId: string
+  students: Student[]
+}) {
   const [rows, setRows] = useState(5)
   const [cols, setCols] = useState(6)
   const [seats, setSeats] = useState<Seat[]>([])
@@ -85,27 +101,30 @@ export default function SeatingTab({ classroomId, students }: { classroomId: str
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }))
 
   useEffect(() => {
-    api.get(`/classrooms/${classroomId}/seating`).then(r => {
-      setRows(r.data.rows ?? 5)
-      setCols(r.data.cols ?? 6)
-      setSeats(r.data.seats ?? [])
-    }).catch(() => {})
+    api
+      .get(`/classrooms/${classroomId}/seating`)
+      .then((r) => {
+        setRows(r.data.rows ?? 5)
+        setCols(r.data.cols ?? 6)
+        setSeats(r.data.seats ?? [])
+      })
+      .catch(() => {})
   }, [classroomId])
 
   function getStudentAtSeat(row: number, col: number): string | null {
-    return seats.find(s => s.row === row && s.col === col)?.studentId ?? null
+    return seats.find((s) => s.row === row && s.col === col)?.studentId ?? null
   }
 
   function getStudentName(id: string | null): string | null {
     if (!id) return null
-    return students.find(s => s.id === id)?.name ?? null
+    return students.find((s) => s.id === id)?.name ?? null
   }
 
-  const assignedIds = new Set(seats.filter(s => s.studentId).map(s => s.studentId!))
-  const unassigned = students.filter(s => !assignedIds.has(s.id))
+  const assignedIds = new Set(seats.filter((s) => s.studentId).map((s) => s.studentId!))
+  const unassigned = students.filter((s) => !assignedIds.has(s.id))
 
   function clearSeat(row: number, col: number) {
-    setSeats(prev => prev.filter(s => !(s.row === row && s.col === col)))
+    setSeats((prev) => prev.filter((s) => !(s.row === row && s.col === col)))
   }
 
   function handleDragStart(event: DragStartEvent) {
@@ -123,9 +142,11 @@ export default function SeatingTab({ classroomId, students }: { classroomId: str
     const col = parseInt(colStr)
     const studentId = String(active.id)
 
-    setSeats(prev => {
+    setSeats((prev) => {
       // Remove student from any existing seat
-      const without = prev.filter(s => s.studentId !== studentId && !(s.row === row && s.col === col))
+      const without = prev.filter(
+        (s) => s.studentId !== studentId && !(s.row === row && s.col === col)
+      )
       return [...without, { row, col, studentId }]
     })
   }
@@ -141,7 +162,7 @@ export default function SeatingTab({ classroomId, students }: { classroomId: str
     }
   }
 
-  const activeStudent = activeId ? students.find(s => s.id === activeId) : null
+  const activeStudent = activeId ? students.find((s) => s.id === activeId) : null
 
   return (
     <div className="space-y-4">
@@ -150,20 +171,30 @@ export default function SeatingTab({ classroomId, students }: { classroomId: str
         <div className="flex items-center gap-2">
           <label className="text-xs font-medium text-gray-500 dark:text-gray-400">Rows</label>
           <input
-            type="number" min={3} max={8} value={rows}
-            onChange={e => setRows(Math.min(8, Math.max(3, Number(e.target.value))))}
+            type="number"
+            min={3}
+            max={8}
+            value={rows}
+            onChange={(e) => setRows(Math.min(8, Math.max(3, Number(e.target.value))))}
             className="w-14 border border-gray-300 dark:border-gray-600 rounded px-2 py-1 text-sm dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
           />
         </div>
         <div className="flex items-center gap-2">
           <label className="text-xs font-medium text-gray-500 dark:text-gray-400">Columns</label>
           <input
-            type="number" min={3} max={10} value={cols}
-            onChange={e => setCols(Math.min(10, Math.max(3, Number(e.target.value))))}
+            type="number"
+            min={3}
+            max={10}
+            value={cols}
+            onChange={(e) => setCols(Math.min(10, Math.max(3, Number(e.target.value))))}
             className="w-14 border border-gray-300 dark:border-gray-600 rounded px-2 py-1 text-sm dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
           />
         </div>
-        <button onClick={save} disabled={saving} className="btn-3d-indigo ml-auto disabled:opacity-50">
+        <button
+          onClick={save}
+          disabled={saving}
+          className="btn-3d-indigo ml-auto disabled:opacity-50"
+        >
           {saving ? 'Saving…' : saved ? 'Saved!' : 'Save Chart'}
         </button>
       </div>
@@ -201,9 +232,7 @@ export default function SeatingTab({ classroomId, students }: { classroomId: str
               {unassigned.length === 0 ? (
                 <p className="text-xs text-gray-400 dark:text-gray-500">All seated</p>
               ) : (
-                unassigned.map(s => (
-                  <DraggableStudent key={s.id} id={s.id} name={s.name} />
-                ))
+                unassigned.map((s) => <DraggableStudent key={s.id} id={s.id} name={s.name} />)
               )}
             </div>
           </div>

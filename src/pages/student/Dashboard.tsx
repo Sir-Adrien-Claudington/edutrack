@@ -5,34 +5,50 @@ import StudentNav from '../../components/StudentNav'
 import api from '../../api/client'
 
 interface Assignment {
-  id: string; title: string; type: string; dueDate: string | null
+  id: string
+  title: string
+  type: string
+  dueDate: string | null
   classroom: { name: string }
   submissions: { id: string; status: string; totalScore: number | null }[]
   _count: { questions: number }
 }
 
 interface Classroom {
-  id: string; name: string; classCode: string; yearLevel: number | null
+  id: string
+  name: string
+  classCode: string
+  yearLevel: number | null
   _count: { assignments: number }
 }
 
 interface GradeGoal {
-  id: string; classroomId: string; targetGrade: number
+  id: string
+  classroomId: string
+  targetGrade: number
   classroom: { name: string }
 }
 
 interface LeaderboardEntry {
-  studentId: string; name: string; points: number; rank: number; isCurrentUser: boolean
+  studentId: string
+  name: string
+  points: number
+  rank: number
+  isCurrentUser: boolean
 }
 
 function statusBadge(subs: Assignment['submissions']) {
   if (subs.length === 0) return { label: 'Not Started', color: 'bg-gray-100 text-gray-500' }
-  if (subs[0].status === 'GRADED') return { label: `Graded · ${subs[0].totalScore?.toFixed(0)}%`, color: 'bg-green-100 text-green-700' }
+  if (subs[0].status === 'GRADED')
+    return {
+      label: `Graded · ${subs[0].totalScore?.toFixed(0)}%`,
+      color: 'bg-green-100 text-green-700',
+    }
   return { label: 'Submitted', color: 'bg-blue-100 text-blue-700' }
 }
 
 export default function StudentDashboard() {
-  const user = useAuthStore(s => s.user)
+  const user = useAuthStore((s) => s.user)
   const [assignments, setAssignments] = useState<Assignment[]>([])
   const [classrooms, setClassrooms] = useState<Classroom[]>([])
   const [gradeGoals, setGradeGoals] = useState<GradeGoal[]>([])
@@ -56,21 +72,29 @@ export default function StudentDashboard() {
     setLoading(false)
     // Load leaderboards for each classroom
     for (const c of classRes.data) {
-      api.get(`/classrooms/${c.id}/leaderboard`).then(r => {
-        setLeaderboards(prev => ({ ...prev, [c.id]: r.data }))
-      }).catch(() => {})
+      api
+        .get(`/classrooms/${c.id}/leaderboard`)
+        .then((r) => {
+          setLeaderboards((prev) => ({ ...prev, [c.id]: r.data }))
+        })
+        .catch(() => {})
     }
   }
 
-  useEffect(() => { loadAll() }, [])
+  useEffect(() => {
+    loadAll()
+  }, [])
 
   async function saveGoal(classroomId: string) {
     const val = parseFloat(goalValue)
     if (isNaN(val) || val < 0 || val > 100) return
     const { data } = await api.put(`/grade-goals/${classroomId}`, { targetGrade: val })
-    setGradeGoals(gs => {
-      const existing = gs.find(g => g.classroomId === classroomId)
-      if (existing) return gs.map(g => g.classroomId === classroomId ? { ...g, targetGrade: data.targetGrade } : g)
+    setGradeGoals((gs) => {
+      const existing = gs.find((g) => g.classroomId === classroomId)
+      if (existing)
+        return gs.map((g) =>
+          g.classroomId === classroomId ? { ...g, targetGrade: data.targetGrade } : g
+        )
       return [...gs, data]
     })
     setEditingGoal(null)
@@ -78,11 +102,16 @@ export default function StudentDashboard() {
 
   function getAvgForClassroom(classroomId: string): number | null {
     // Get graded submissions for this classroom
-    const classroomName = classrooms.find(c => c.id === classroomId)?.name
+    const classroomName = classrooms.find((c) => c.id === classroomId)?.name
     if (!classroomName) return null
-    const graded = assignments.filter(a => a.classroom.name === classroomName && a.submissions.length > 0 && a.submissions[0].status === 'GRADED')
+    const graded = assignments.filter(
+      (a) =>
+        a.classroom.name === classroomName &&
+        a.submissions.length > 0 &&
+        a.submissions[0].status === 'GRADED'
+    )
     if (graded.length === 0) return null
-    const scores = graded.map(a => a.submissions[0].totalScore ?? 0)
+    const scores = graded.map((a) => a.submissions[0].totalScore ?? 0)
     return scores.reduce((s, v) => s + v, 0) / scores.length
   }
 
@@ -99,8 +128,8 @@ export default function StudentDashboard() {
     }
   }
 
-  const due = assignments.filter(a => a.submissions.length === 0)
-  const done = assignments.filter(a => a.submissions.length > 0)
+  const due = assignments.filter((a) => a.submissions.length === 0)
+  const done = assignments.filter((a) => a.submissions.length > 0)
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
@@ -108,21 +137,44 @@ export default function StudentDashboard() {
 
       <main className="max-w-3xl mx-auto px-6 py-8">
         <div className="mb-8">
-          <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">Hi, {user?.name?.split(' ')[0]} 👋</h1>
+          <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">
+            Hi, {user?.name?.split(' ')[0]} 👋
+          </h1>
           <p className="text-gray-500 text-sm mt-1">
-            {due.length === 0 ? 'You\'re all caught up!' : `You have ${due.length} task${due.length > 1 ? 's' : ''} to complete`}
+            {due.length === 0
+              ? "You're all caught up!"
+              : `You have ${due.length} task${due.length > 1 ? 's' : ''} to complete`}
           </p>
         </div>
 
         {showJoin && (
-          <form onSubmit={joinClass} className="mb-6 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4">
-            <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Enter your class code</p>
+          <form
+            onSubmit={joinClass}
+            className="mb-6 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4"
+          >
+            <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+              Enter your class code
+            </p>
             <div className="flex gap-3">
-              <input autoFocus value={classCode} onChange={e => setClassCode(e.target.value.toUpperCase())}
+              <input
+                autoFocus
+                value={classCode}
+                onChange={(e) => setClassCode(e.target.value.toUpperCase())}
                 className="flex-1 border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm font-mono tracking-widest bg-white dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-teal-500"
-                placeholder="ABC123" maxLength={6} required />
-              <button type="submit" className="btn-3d-teal">Join</button>
-              <button type="button" onClick={() => setShowJoin(false)} className="text-gray-500 px-3 text-sm">Cancel</button>
+                placeholder="ABC123"
+                maxLength={6}
+                required
+              />
+              <button type="submit" className="btn-3d-teal">
+                Join
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowJoin(false)}
+                className="text-gray-500 px-3 text-sm"
+              >
+                Cancel
+              </button>
             </div>
             {joinError && <p className="text-red-500 text-sm mt-2">{joinError}</p>}
           </form>
@@ -133,20 +185,24 @@ export default function StudentDashboard() {
         ) : assignments.length === 0 && classrooms.length === 0 ? (
           <div className="text-center py-16 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700">
             <p className="text-gray-400 text-lg">No assignments yet</p>
-            <p className="text-gray-400 text-sm mt-1">Join a class using a class code from your teacher</p>
+            <p className="text-gray-400 text-sm mt-1">
+              Join a class using a class code from your teacher
+            </p>
           </div>
         ) : (
           <div className="space-y-6">
             {/* My Classes with grade goals and leaderboard */}
             {classrooms.length > 0 && (
               <div>
-                <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">My Classes</h2>
+                <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">
+                  My Classes
+                </h2>
                 <div className="space-y-3">
-                  {classrooms.map(c => {
-                    const goal = gradeGoals.find(g => g.classroomId === c.id)
+                  {classrooms.map((c) => {
+                    const goal = gradeGoals.find((g) => g.classroomId === c.id)
                     const avg = getAvgForClassroom(c.id)
                     const lb = leaderboards[c.id]
-                    const me = lb?.find(e => e.isCurrentUser)
+                    const me = lb?.find((e) => e.isCurrentUser)
                     let progressColor = 'bg-indigo-500'
                     if (goal && avg !== null) {
                       const diff = avg - goal.targetGrade
@@ -155,34 +211,65 @@ export default function StudentDashboard() {
                       else progressColor = 'bg-indigo-500'
                     }
                     return (
-                      <div key={c.id} className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-5 py-4">
+                      <div
+                        key={c.id}
+                        className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-5 py-4"
+                      >
                         <div className="flex items-center justify-between mb-2">
                           <div>
                             <h3 className="font-medium text-gray-900 dark:text-white">{c.name}</h3>
-                            <p className="text-xs text-gray-400 mt-0.5">{c._count.assignments} assignments</p>
+                            <p className="text-xs text-gray-400 mt-0.5">
+                              {c._count.assignments} assignments
+                            </p>
                           </div>
                           <div className="flex items-center gap-3">
                             {me && (
-                              <span className="text-xs text-teal-600 dark:text-teal-400 font-medium">#{me.rank} · {me.points} pts</span>
+                              <span className="text-xs text-teal-600 dark:text-teal-400 font-medium">
+                                #{me.rank} · {me.points} pts
+                              </span>
                             )}
                             {editingGoal === c.id ? (
                               <div className="flex items-center gap-1">
                                 <input
-                                  type="number" min={0} max={100} value={goalValue}
-                                  onChange={e => setGoalValue(e.target.value)}
+                                  type="number"
+                                  min={0}
+                                  max={100}
+                                  value={goalValue}
+                                  onChange={(e) => setGoalValue(e.target.value)}
                                   className="w-16 border border-gray-300 dark:border-gray-600 rounded px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-teal-500 dark:bg-gray-700 dark:text-white"
                                   autoFocus
-                                  onKeyDown={e => { if (e.key === 'Enter') saveGoal(c.id); if (e.key === 'Escape') setEditingGoal(null) }}
+                                  onKeyDown={(e) => {
+                                    if (e.key === 'Enter') saveGoal(c.id)
+                                    if (e.key === 'Escape') setEditingGoal(null)
+                                  }}
                                 />
-                                <button onClick={() => saveGoal(c.id)} className="text-xs text-teal-600 font-medium">Save</button>
-                                <button onClick={() => setEditingGoal(null)} className="text-xs text-gray-400">✕</button>
+                                <button
+                                  onClick={() => saveGoal(c.id)}
+                                  className="text-xs text-teal-600 font-medium"
+                                >
+                                  Save
+                                </button>
+                                <button
+                                  onClick={() => setEditingGoal(null)}
+                                  className="text-xs text-gray-400"
+                                >
+                                  ✕
+                                </button>
                               </div>
                             ) : (
                               <button
-                                onClick={() => { setEditingGoal(c.id); setGoalValue(goal?.targetGrade?.toString() ?? '') }}
+                                onClick={() => {
+                                  setEditingGoal(c.id)
+                                  setGoalValue(goal?.targetGrade?.toString() ?? '')
+                                }}
                                 className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400 hover:text-teal-600 dark:hover:text-teal-400 transition-colors"
                               >
-                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" className="w-3 h-3">
+                                <svg
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  viewBox="0 0 16 16"
+                                  fill="currentColor"
+                                  className="w-3 h-3"
+                                >
                                   <path d="M13.488 2.513a1.75 1.75 0 0 0-2.475 0L6.75 6.774a2.75 2.75 0 0 0-.596.892l-.848 2.047a.75.75 0 0 0 .98.98l2.047-.848a2.75 2.75 0 0 0 .892-.596l4.261-4.263a1.75 1.75 0 0 0 0-2.474Z" />
                                   <path d="M4.75 3.5c-.69 0-1.25.56-1.25 1.25v6.5c0 .69.56 1.25 1.25 1.25h6.5c.69 0 1.25-.56 1.25-1.25V9a.75.75 0 0 1 1.5 0v2.25A2.75 2.75 0 0 1 11.25 14h-6.5A2.75 2.75 0 0 1 2 11.25v-6.5A2.75 2.75 0 0 1 4.75 2H7a.75.75 0 0 1 0 1.5H4.75Z" />
                                 </svg>
@@ -194,13 +281,17 @@ export default function StudentDashboard() {
                         {goal && (
                           <div className="mt-2">
                             <div className="flex items-center justify-between text-[10px] text-gray-400 mb-1">
-                              <span>Current avg: {avg !== null ? `${avg.toFixed(0)}%` : 'No grades yet'}</span>
+                              <span>
+                                Current avg: {avg !== null ? `${avg.toFixed(0)}%` : 'No grades yet'}
+                              </span>
                               <span>Goal: {goal.targetGrade}%</span>
                             </div>
                             <div className="h-1.5 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
                               <div
                                 className={`h-full rounded-full transition-all ${progressColor}`}
-                                style={{ width: `${Math.min(100, avg !== null ? (avg / goal.targetGrade) * 100 : 0)}%` }}
+                                style={{
+                                  width: `${Math.min(100, avg !== null ? (avg / goal.targetGrade) * 100 : 0)}%`,
+                                }}
                               />
                             </div>
                           </div>
@@ -214,22 +305,35 @@ export default function StudentDashboard() {
 
             {due.length > 0 && (
               <div>
-                <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">To Do</h2>
+                <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">
+                  To Do
+                </h2>
                 <div className="space-y-3">
-                  {due.map(a => {
+                  {due.map((a) => {
                     const badge = statusBadge(a.submissions)
                     return (
-                      <Link key={a.id} to={`/student/assignment/${a.id}`}
-                        className="block bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-5 py-4 hover:border-teal-300 hover:shadow-sm transition-all">
+                      <Link
+                        key={a.id}
+                        to={`/student/assignment/${a.id}`}
+                        className="block bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-5 py-4 hover:border-teal-300 hover:shadow-sm transition-all"
+                      >
                         <div className="flex items-start justify-between">
                           <div>
                             <h3 className="font-medium text-gray-900 dark:text-white">{a.title}</h3>
-                            <p className="text-sm text-gray-400 mt-0.5">{a.classroom.name} · {a._count.questions} questions</p>
+                            <p className="text-sm text-gray-400 mt-0.5">
+                              {a.classroom.name} · {a._count.questions} questions
+                            </p>
                           </div>
-                          <span className={`text-xs px-2 py-1 rounded-full font-medium ${badge.color}`}>{badge.label}</span>
+                          <span
+                            className={`text-xs px-2 py-1 rounded-full font-medium ${badge.color}`}
+                          >
+                            {badge.label}
+                          </span>
                         </div>
                         {a.dueDate && (
-                          <p className="text-xs text-gray-400 mt-2">Due {new Date(a.dueDate).toLocaleDateString()}</p>
+                          <p className="text-xs text-gray-400 mt-2">
+                            Due {new Date(a.dueDate).toLocaleDateString()}
+                          </p>
                         )}
                       </Link>
                     )
@@ -239,18 +343,27 @@ export default function StudentDashboard() {
             )}
             {done.length > 0 && (
               <div>
-                <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">Completed</h2>
+                <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">
+                  Completed
+                </h2>
                 <div className="space-y-3">
-                  {done.map(a => {
+                  {done.map((a) => {
                     const badge = statusBadge(a.submissions)
                     return (
-                      <div key={a.id} className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-5 py-4 opacity-75">
+                      <div
+                        key={a.id}
+                        className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-5 py-4 opacity-75"
+                      >
                         <div className="flex items-start justify-between">
                           <div>
                             <h3 className="font-medium text-gray-900 dark:text-white">{a.title}</h3>
                             <p className="text-sm text-gray-400 mt-0.5">{a.classroom.name}</p>
                           </div>
-                          <span className={`text-xs px-2 py-1 rounded-full font-medium ${badge.color}`}>{badge.label}</span>
+                          <span
+                            className={`text-xs px-2 py-1 rounded-full font-medium ${badge.color}`}
+                          >
+                            {badge.label}
+                          </span>
                         </div>
                       </div>
                     )

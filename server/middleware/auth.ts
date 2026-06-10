@@ -12,13 +12,25 @@ export async function authenticate(req: AuthRequest, res: Response, next: NextFu
     return
   }
   try {
-    const payload = jwt.verify(token, process.env.JWT_SECRET!) as { id: string; role: string; email: string; tv?: number }
+    const payload = jwt.verify(token, process.env.JWT_SECRET!) as {
+      id: string
+      role: string
+      email: string
+      tv?: number
+    }
     // Check tokenVersion to support force-logout (skip if Prisma client is stale)
     if (payload.tv !== undefined) {
       try {
         const { prisma } = await import('../prisma/client.js')
-        const user = await prisma.user.findUnique({ where: { id: payload.id }, select: { tokenVersion: true } as any })
-        if (user && (user as any).tokenVersion !== undefined && (user as any).tokenVersion !== payload.tv) {
+        const user = await prisma.user.findUnique({
+          where: { id: payload.id },
+          select: { tokenVersion: true } as any,
+        })
+        if (
+          user &&
+          (user as any).tokenVersion !== undefined &&
+          (user as any).tokenVersion !== payload.tv
+        ) {
           res.status(401).json({ error: 'Session expired' })
           return
         }

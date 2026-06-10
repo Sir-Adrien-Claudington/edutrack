@@ -15,7 +15,7 @@ const INJECTION_PATTERNS = [
 
 function containsInjection(value: unknown): boolean {
   if (typeof value === 'string') {
-    if (INJECTION_PATTERNS.some(p => p.test(value))) return true
+    if (INJECTION_PATTERNS.some((p) => p.test(value))) return true
     // Flag strings with excessive special chars (>30% non-alphanumeric)
     const nonAlpha = (value.match(/[^a-zA-Z0-9\s]/g) ?? []).length
     if (value.length > 50 && nonAlpha / value.length > 0.3) return true

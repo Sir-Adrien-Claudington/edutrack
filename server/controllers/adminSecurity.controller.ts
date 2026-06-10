@@ -22,9 +22,19 @@ export async function getUserLoginHistory(req: AuthRequest, res: Response) {
   const { userId } = req.params
   const user = await prisma.user.findUnique({
     where: { id: userId },
-    select: { id: true, name: true, email: true, lastLoginAt: true, createdAt: true, suspended: true },
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      lastLoginAt: true,
+      createdAt: true,
+      suspended: true,
+    },
   })
-  if (!user) { res.status(404).json({ error: 'User not found' }); return }
+  if (!user) {
+    res.status(404).json({ error: 'User not found' })
+    return
+  }
 
   const auditEntries = await prisma.auditLog.findMany({
     where: { OR: [{ adminId: userId }, { target: { contains: userId } }] },
@@ -39,10 +49,14 @@ export async function getUserLoginHistory(req: AuthRequest, res: Response) {
 export async function forceLogout(req: AuthRequest, res: Response) {
   const { userId } = req.params
   if (userId === req.user!.id) {
-    res.status(400).json({ error: 'You cannot force-logout yourself' }); return
+    res.status(400).json({ error: 'You cannot force-logout yourself' })
+    return
   }
   const user = await prisma.user.findUnique({ where: { id: userId } })
-  if (!user) { res.status(404).json({ error: 'User not found' }); return }
+  if (!user) {
+    res.status(404).json({ error: 'User not found' })
+    return
+  }
 
   await prisma.user.update({ where: { id: userId }, data: { tokenVersion: { increment: 1 } } })
   await prisma.auditLog.create({
@@ -56,5 +70,5 @@ export async function getAuditActions(_req: AuthRequest, res: Response) {
     select: { action: true },
     distinct: ['action'],
   })
-  res.json(actions.map(a => a.action))
+  res.json(actions.map((a) => a.action))
 }

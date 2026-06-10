@@ -13,18 +13,19 @@ interface AnswerInput {
 }
 
 export function gradeSubmission(questions: Question[], answers: AnswerInput[]) {
-  const answerMap = new Map(answers.map(a => [a.questionId, a.responseText]))
+  const answerMap = new Map(answers.map((a) => [a.questionId, a.responseText]))
   let totalEarned = 0
   let totalPossible = 0
 
-  const gradedAnswers = questions.map(q => {
+  const gradedAnswers = questions.map((q) => {
     totalPossible += q.points
     const response = answerMap.get(q.id) ?? ''
     let isCorrect: boolean | null = null
     let pointsAwarded = 0
 
     if (q.type === 'MULTIPLE_CHOICE' || q.type === 'TRUE_FALSE') {
-      isCorrect = q.correctAnswer !== null &&
+      isCorrect =
+        q.correctAnswer !== null &&
         response.trim().toLowerCase() === q.correctAnswer.trim().toLowerCase()
       pointsAwarded = isCorrect ? q.points : 0
       totalEarned += pointsAwarded

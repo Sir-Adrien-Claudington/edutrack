@@ -7,12 +7,13 @@ export const registerSchema = z.object({
   role: z.enum(['TEACHER', 'STUDENT'], { message: 'Role must be TEACHER or STUDENT' }),
 })
 
-export const loginSchema = z.object({
-  email: z.string().email('Invalid email address').optional(),
-  password: z.string().min(1, 'Password is required').optional(),
-  username: z.string().min(1).optional(),
-  classCode: z.string().min(1).optional(),
-}).refine(
-  data => (data.email && data.password) || (data.username && data.classCode),
-  { message: 'Provide email+password or username+classCode' }
-)
+export const loginSchema = z
+  .object({
+    email: z.string().email('Invalid email address').optional(),
+    password: z.string().min(1, 'Password is required').optional(),
+    username: z.string().min(1).optional(),
+    classCode: z.string().min(1).optional(),
+  })
+  .refine((data) => (data.email && data.password) || (data.username && data.classCode), {
+    message: 'Provide email+password or username+classCode',
+  })

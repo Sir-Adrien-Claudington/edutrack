@@ -39,14 +39,22 @@ export async function getSubmissions(req: AuthRequest, res: Response) {
 export async function overrideGrade(req: AuthRequest, res: Response) {
   const { id } = req.params
   const { totalScore, curveNote } = req.body
-  if (totalScore === undefined) { res.status(400).json({ error: 'totalScore required' }); return }
+  if (totalScore === undefined) {
+    res.status(400).json({ error: 'totalScore required' })
+    return
+  }
   const submission = await prisma.submission.findUnique({
     where: { id },
     include: { assignment: { select: { title: true } } },
   })
   const updated = await prisma.submission.update({
     where: { id },
-    data: { totalScore: Number(totalScore), curvedScore: Number(totalScore), curveNote: curveNote ?? 'Admin override', status: 'GRADED' },
+    data: {
+      totalScore: Number(totalScore),
+      curvedScore: Number(totalScore),
+      curveNote: curveNote ?? 'Admin override',
+      status: 'GRADED',
+    },
   })
   await audit(req.user!.id, 'GRADE_OVERRIDDEN', `submissionId:${id}`, { totalScore })
   res.json(updated)
@@ -56,7 +64,7 @@ export async function overrideGrade(req: AuthRequest, res: Response) {
       'GRADED',
       'Your assignment was graded',
       `Your submission for "${submission.assignment.title}" has been graded.`,
-      `/student/submission/${id}`,
+      `/student/submission/${id}`
     ).catch((e: Error) => logger.error({ err: e.message }, '[adminContent] notification failed'))
   }
 }
@@ -64,7 +72,10 @@ export async function overrideGrade(req: AuthRequest, res: Response) {
 export async function deleteAssignment(req: AuthRequest, res: Response) {
   const { id } = req.params
   const assignment = await prisma.assignment.findUnique({ where: { id } })
-  if (!assignment) { res.status(404).json({ error: 'Not found' }); return }
+  if (!assignment) {
+    res.status(404).json({ error: 'Not found' })
+    return
+  }
   await prisma.assignment.delete({ where: { id } })
   await audit(req.user!.id, 'CONTENT_DELETED', assignment.title, { type: 'assignment' })
   res.json({ success: true })

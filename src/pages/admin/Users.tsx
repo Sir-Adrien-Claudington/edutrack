@@ -16,16 +16,24 @@ interface AdminUser {
   _count: { taughtClassrooms: number; enrollments: number; submissions: number }
 }
 
-interface Totals { role: Role; _count: { id: number } }
+interface Totals {
+  role: Role
+  _count: { id: number }
+}
 
 const ROLE_COLOURS: Record<Role, string> = {
-  ADMIN:   'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300',
+  ADMIN: 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300',
   TEACHER: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300',
   STUDENT: 'bg-teal-100 text-teal-700 dark:bg-teal-900/30 dark:text-teal-300',
 }
 
 function initials(name: string) {
-  return name.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase()
+  return name
+    .split(' ')
+    .map((w) => w[0])
+    .slice(0, 2)
+    .join('')
+    .toUpperCase()
 }
 
 function timeAgo(date: string | null) {
@@ -42,7 +50,7 @@ function timeAgo(date: string | null) {
 type Modal = 'create' | 'edit' | 'reset' | 'delete' | null
 
 export default function Users() {
-  const currentUser = useAuthStore(s => s.user)
+  const currentUser = useAuthStore((s) => s.user)
   const [users, setUsers] = useState<AdminUser[]>([])
   const [totals, setTotals] = useState<Totals[]>([])
   const [suspendedCount, setSuspendedCount] = useState(0)
@@ -77,7 +85,9 @@ export default function Users() {
     }
   }
 
-  useEffect(() => { load() }, [search, roleFilter, statusFilter])
+  useEffect(() => {
+    load()
+  }, [search, roleFilter, statusFilter])
 
   function openCreate() {
     setForm({ name: '', email: '', password: '', role: 'TEACHER' })
@@ -105,7 +115,10 @@ export default function Users() {
 
   async function handleCreate() {
     setFormError('')
-    if (!form.name || !form.email || !form.password) { setFormError('All fields required'); return }
+    if (!form.name || !form.email || !form.password) {
+      setFormError('All fields required')
+      return
+    }
     setSaving(true)
     try {
       await api.post('/admin/users', form)
@@ -113,7 +126,9 @@ export default function Users() {
       load()
     } catch (e: any) {
       setFormError(e.response?.data?.error ?? 'Failed to create user')
-    } finally { setSaving(false) }
+    } finally {
+      setSaving(false)
+    }
   }
 
   async function handleEdit() {
@@ -121,12 +136,18 @@ export default function Users() {
     setFormError('')
     setSaving(true)
     try {
-      await api.put(`/admin/users/${selected.id}`, { name: form.name, email: form.email, role: form.role })
+      await api.put(`/admin/users/${selected.id}`, {
+        name: form.name,
+        email: form.email,
+        role: form.role,
+      })
       setModal(null)
       load()
     } catch (e: any) {
       setFormError(e.response?.data?.error ?? 'Failed to update user')
-    } finally { setSaving(false) }
+    } finally {
+      setSaving(false)
+    }
   }
 
   async function handleReset() {
@@ -135,7 +156,9 @@ export default function Users() {
     try {
       const { data } = await api.post(`/admin/users/${selected.id}/reset-password`)
       setNewPassword(data.newPassword)
-    } finally { setSaving(false) }
+    } finally {
+      setSaving(false)
+    }
   }
 
   async function handleDelete() {
@@ -145,7 +168,9 @@ export default function Users() {
       await api.delete(`/admin/users/${selected.id}`)
       setModal(null)
       load()
-    } finally { setSaving(false) }
+    } finally {
+      setSaving(false)
+    }
   }
 
   async function handleSuspend(u: AdminUser) {
@@ -154,8 +179,8 @@ export default function Users() {
   }
 
   const totalUsers = totals.reduce((s, t) => s + t._count.id, 0)
-  const teacherCount = totals.find(t => t.role === 'TEACHER')?._count.id ?? 0
-  const studentCount = totals.find(t => t.role === 'STUDENT')?._count.id ?? 0
+  const teacherCount = totals.find((t) => t.role === 'TEACHER')?._count.id ?? 0
+  const studentCount = totals.find((t) => t.role === 'STUDENT')?._count.id ?? 0
 
   return (
     <AdminLayout>
@@ -164,12 +189,11 @@ export default function Users() {
         <div className="flex items-center justify-between mb-6">
           <div>
             <h1 className="text-2xl font-bold text-gray-900 dark:text-white">User Management</h1>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">Create, edit, and manage all accounts</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
+              Create, edit, and manage all accounts
+            </p>
           </div>
-          <button
-            onClick={openCreate}
-            className="btn-3d-indigo"
-          >
+          <button onClick={openCreate} className="btn-3d-indigo">
             + Create User
           </button>
         </div>
@@ -177,12 +201,15 @@ export default function Users() {
         {/* Stats */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
           {[
-            { label: 'Total Users',  value: totalUsers,     colour: 'text-gray-900 dark:text-white' },
-            { label: 'Teachers',     value: teacherCount,   colour: 'text-blue-600 dark:text-blue-400' },
-            { label: 'Students',     value: studentCount,   colour: 'text-teal-600 dark:text-teal-400' },
-            { label: 'Suspended',    value: suspendedCount, colour: 'text-red-600 dark:text-red-400' },
-          ].map(s => (
-            <div key={s.label} className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4">
+            { label: 'Total Users', value: totalUsers, colour: 'text-gray-900 dark:text-white' },
+            { label: 'Teachers', value: teacherCount, colour: 'text-blue-600 dark:text-blue-400' },
+            { label: 'Students', value: studentCount, colour: 'text-teal-600 dark:text-teal-400' },
+            { label: 'Suspended', value: suspendedCount, colour: 'text-red-600 dark:text-red-400' },
+          ].map((s) => (
+            <div
+              key={s.label}
+              className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4"
+            >
               <p className="text-sm text-gray-500 dark:text-gray-400">{s.label}</p>
               <p className={`text-2xl font-bold mt-1 ${s.colour}`}>{s.value}</p>
             </div>
@@ -193,13 +220,13 @@ export default function Users() {
         <div className="flex gap-3 mb-4">
           <input
             value={search}
-            onChange={e => setSearch(e.target.value)}
+            onChange={(e) => setSearch(e.target.value)}
             placeholder="Search name or email…"
             className="flex-1 border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
           />
           <select
             value={roleFilter}
-            onChange={e => setRoleFilter(e.target.value)}
+            onChange={(e) => setRoleFilter(e.target.value)}
             className="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
           >
             <option value="">All roles</option>
@@ -209,7 +236,7 @@ export default function Users() {
           </select>
           <select
             value={statusFilter}
-            onChange={e => setStatusFilter(e.target.value)}
+            onChange={(e) => setStatusFilter(e.target.value)}
             className="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
           >
             <option value="">All statuses</option>
@@ -225,7 +252,9 @@ export default function Users() {
               <div className="w-8 h-8 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin" />
             </div>
           ) : users.length === 0 ? (
-            <div className="text-center py-16 text-gray-500 dark:text-gray-400 text-sm">No users found</div>
+            <div className="text-center py-16 text-gray-500 dark:text-gray-400 text-sm">
+              No users found
+            </div>
           ) : (
             <table className="w-full">
               <thead className="bg-gray-50 dark:bg-gray-700/50 text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">
@@ -240,38 +269,67 @@ export default function Users() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
-                {users.map(u => (
-                  <tr key={u.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors">
+                {users.map((u) => (
+                  <tr
+                    key={u.id}
+                    className="hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors"
+                  >
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-3">
                         <div className="w-8 h-8 rounded-full bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 flex items-center justify-center text-xs font-bold flex-shrink-0">
                           {initials(u.name)}
                         </div>
                         <div>
-                          <p className="text-sm font-medium text-gray-900 dark:text-white">{u.name}</p>
-                          <p className="text-xs text-gray-500 dark:text-gray-400">{u.email ?? '—'}</p>
+                          <p className="text-sm font-medium text-gray-900 dark:text-white">
+                            {u.name}
+                          </p>
+                          <p className="text-xs text-gray-500 dark:text-gray-400">
+                            {u.email ?? '—'}
+                          </p>
                         </div>
                       </div>
                     </td>
                     <td className="px-4 py-3">
-                      <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${ROLE_COLOURS[u.role]}`}>
+                      <span
+                        className={`px-2 py-0.5 rounded-full text-xs font-medium ${ROLE_COLOURS[u.role]}`}
+                      >
                         {u.role}
                       </span>
                     </td>
                     <td className="px-4 py-3">
-                      <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${u.suspended ? 'bg-red-100 text-red-700 dark:bg-red-900/20 dark:text-red-400' : 'bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-400'}`}>
+                      <span
+                        className={`px-2 py-0.5 rounded-full text-xs font-medium ${u.suspended ? 'bg-red-100 text-red-700 dark:bg-red-900/20 dark:text-red-400' : 'bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-400'}`}
+                      >
                         {u.suspended ? 'Suspended' : 'Active'}
                       </span>
                     </td>
                     <td className="px-4 py-3 text-xs text-gray-500 dark:text-gray-400">
-                      {u.role === 'TEACHER' ? `${u._count.taughtClassrooms} class${u._count.taughtClassrooms !== 1 ? 'es' : ''}` : u.role === 'STUDENT' ? `${u._count.submissions} submission${u._count.submissions !== 1 ? 's' : ''}` : '—'}
+                      {u.role === 'TEACHER'
+                        ? `${u._count.taughtClassrooms} class${u._count.taughtClassrooms !== 1 ? 'es' : ''}`
+                        : u.role === 'STUDENT'
+                          ? `${u._count.submissions} submission${u._count.submissions !== 1 ? 's' : ''}`
+                          : '—'}
                     </td>
-                    <td className="px-4 py-3 text-xs text-gray-500 dark:text-gray-400">{timeAgo(u.lastLoginAt)}</td>
-                    <td className="px-4 py-3 text-xs text-gray-500 dark:text-gray-400">{new Date(u.createdAt).toLocaleDateString()}</td>
+                    <td className="px-4 py-3 text-xs text-gray-500 dark:text-gray-400">
+                      {timeAgo(u.lastLoginAt)}
+                    </td>
+                    <td className="px-4 py-3 text-xs text-gray-500 dark:text-gray-400">
+                      {new Date(u.createdAt).toLocaleDateString()}
+                    </td>
                     <td className="px-4 py-3">
                       <div className="flex items-center justify-end gap-1">
-                        <button onClick={() => openEdit(u)} className="px-2 py-1 text-xs text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors">Edit</button>
-                        <button onClick={() => openReset(u)} className="px-2 py-1 text-xs text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors">Reset PW</button>
+                        <button
+                          onClick={() => openEdit(u)}
+                          className="px-2 py-1 text-xs text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
+                        >
+                          Edit
+                        </button>
+                        <button
+                          onClick={() => openReset(u)}
+                          className="px-2 py-1 text-xs text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
+                        >
+                          Reset PW
+                        </button>
                         {u.id !== currentUser?.id && (
                           <button
                             onClick={() => handleSuspend(u)}
@@ -281,7 +339,12 @@ export default function Users() {
                           </button>
                         )}
                         {u.id !== currentUser?.id && (
-                          <button onClick={() => openDelete(u)} className="px-2 py-1 text-xs text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors">Delete</button>
+                          <button
+                            onClick={() => openDelete(u)}
+                            className="px-2 py-1 text-xs text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-colors"
+                          >
+                            Delete
+                          </button>
                         )}
                       </div>
                     </td>
@@ -297,7 +360,12 @@ export default function Users() {
       {modal === 'create' && (
         <ModalShell title="Create User" onClose={() => setModal(null)}>
           <UserForm form={form} setForm={setForm} showPassword error={formError} />
-          <ModalFooter onClose={() => setModal(null)} onConfirm={handleCreate} confirmLabel="Create" saving={saving} />
+          <ModalFooter
+            onClose={() => setModal(null)}
+            onConfirm={handleCreate}
+            confirmLabel="Create"
+            saving={saving}
+          />
         </ModalShell>
       )}
 
@@ -305,7 +373,12 @@ export default function Users() {
       {modal === 'edit' && selected && (
         <ModalShell title={`Edit ${selected.name}`} onClose={() => setModal(null)}>
           <UserForm form={form} setForm={setForm} showPassword={false} error={formError} />
-          <ModalFooter onClose={() => setModal(null)} onConfirm={handleEdit} confirmLabel="Save" saving={saving} />
+          <ModalFooter
+            onClose={() => setModal(null)}
+            onConfirm={handleEdit}
+            confirmLabel="Save"
+            saving={saving}
+          />
         </ModalShell>
       )}
 
@@ -314,25 +387,42 @@ export default function Users() {
         <ModalShell title="Reset Password" onClose={() => setModal(null)}>
           {newPassword ? (
             <div className="space-y-3">
-              <p className="text-sm text-gray-600 dark:text-gray-400">New password for <strong>{selected.name}</strong>:</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400">
+                New password for <strong>{selected.name}</strong>:
+              </p>
               <div className="flex items-center gap-2">
-                <code className="flex-1 bg-gray-100 dark:bg-gray-700 rounded-lg px-3 py-2 text-sm font-mono text-gray-900 dark:text-white">{newPassword}</code>
+                <code className="flex-1 bg-gray-100 dark:bg-gray-700 rounded-lg px-3 py-2 text-sm font-mono text-gray-900 dark:text-white">
+                  {newPassword}
+                </code>
                 <button
                   onClick={() => navigator.clipboard.writeText(newPassword)}
                   className="btn-3d-indigo px-3 text-xs"
-                >Copy</button>
+                >
+                  Copy
+                </button>
               </div>
-              <p className="text-xs text-amber-600 dark:text-amber-400">Share this with the user — it won't be shown again.</p>
+              <p className="text-xs text-amber-600 dark:text-amber-400">
+                Share this with the user — it won't be shown again.
+              </p>
             </div>
           ) : (
-            <p className="text-sm text-gray-600 dark:text-gray-400">Generate a new random password for <strong>{selected.name}</strong>?</p>
+            <p className="text-sm text-gray-600 dark:text-gray-400">
+              Generate a new random password for <strong>{selected.name}</strong>?
+            </p>
           )}
           <div className="flex justify-end gap-2 mt-4">
-            <button onClick={() => setModal(null)} className="px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">
+            <button
+              onClick={() => setModal(null)}
+              className="px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
+            >
               {newPassword ? 'Close' : 'Cancel'}
             </button>
             {!newPassword && (
-              <button onClick={handleReset} disabled={saving} className="btn-3d-indigo disabled:opacity-50">
+              <button
+                onClick={handleReset}
+                disabled={saving}
+                className="btn-3d-indigo disabled:opacity-50"
+              >
                 {saving ? 'Generating…' : 'Generate'}
               </button>
             )}
@@ -344,11 +434,21 @@ export default function Users() {
       {modal === 'delete' && selected && (
         <ModalShell title="Delete User" onClose={() => setModal(null)}>
           <p className="text-sm text-gray-600 dark:text-gray-400">
-            Permanently delete <strong>{selected.name}</strong>? This cannot be undone and will remove all their data.
+            Permanently delete <strong>{selected.name}</strong>? This cannot be undone and will
+            remove all their data.
           </p>
           <div className="flex justify-end gap-2 mt-4">
-            <button onClick={() => setModal(null)} className="px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">Cancel</button>
-            <button onClick={handleDelete} disabled={saving} className="px-4 py-2 text-sm bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50">
+            <button
+              onClick={() => setModal(null)}
+              className="px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleDelete}
+              disabled={saving}
+              className="px-4 py-2 text-sm bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50"
+            >
               {saving ? 'Deleting…' : 'Delete'}
             </button>
           </div>
@@ -360,13 +460,26 @@ export default function Users() {
 
 // ── Shared modal components ──────────────────────────────────────────────────
 
-function ModalShell({ title, children, onClose }: { title: string; children: React.ReactNode; onClose: () => void }) {
+function ModalShell({
+  title,
+  children,
+  onClose,
+}: {
+  title: string
+  children: React.ReactNode
+  onClose: () => void
+}) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
       <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl w-full max-w-md p-6">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-semibold text-gray-900 dark:text-white">{title}</h2>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 text-xl leading-none">×</button>
+          <button
+            onClick={onClose}
+            className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 text-xl leading-none"
+          >
+            ×
+          </button>
         </div>
         {children}
       </div>
@@ -374,9 +487,19 @@ function ModalShell({ title, children, onClose }: { title: string; children: Rea
   )
 }
 
-interface FormState { name: string; email: string; password: string; role: Role }
+interface FormState {
+  name: string
+  email: string
+  password: string
+  role: Role
+}
 
-function UserForm({ form, setForm, showPassword, error }: {
+function UserForm({
+  form,
+  setForm,
+  showPassword,
+  error,
+}: {
   form: FormState
   setForm: (f: FormState) => void
   showPassword: boolean
@@ -386,29 +509,51 @@ function UserForm({ form, setForm, showPassword, error }: {
     <div className="space-y-3">
       {error && <p className="text-sm text-red-600 dark:text-red-400">{error}</p>}
       <div>
-        <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Name</label>
-        <input value={form.name} onChange={e => setForm({ ...form, name: e.target.value })}
+        <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+          Name
+        </label>
+        <input
+          value={form.name}
+          onChange={(e) => setForm({ ...form, name: e.target.value })}
           className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
-          placeholder="Full name" />
+          placeholder="Full name"
+        />
       </div>
       <div>
-        <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Email</label>
-        <input type="email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })}
+        <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+          Email
+        </label>
+        <input
+          type="email"
+          value={form.email}
+          onChange={(e) => setForm({ ...form, email: e.target.value })}
           className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
-          placeholder="user@school.com" />
+          placeholder="user@school.com"
+        />
       </div>
       {showPassword && (
         <div>
-          <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Password</label>
-          <input type="password" value={form.password} onChange={e => setForm({ ...form, password: e.target.value })}
+          <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+            Password
+          </label>
+          <input
+            type="password"
+            value={form.password}
+            onChange={(e) => setForm({ ...form, password: e.target.value })}
             className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            placeholder="••••••••" />
+            placeholder="••••••••"
+          />
         </div>
       )}
       <div>
-        <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">Role</label>
-        <select value={form.role} onChange={e => setForm({ ...form, role: e.target.value as Role })}
-          className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500">
+        <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+          Role
+        </label>
+        <select
+          value={form.role}
+          onChange={(e) => setForm({ ...form, role: e.target.value as Role })}
+          className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+        >
           <option value="TEACHER">Teacher</option>
           <option value="STUDENT">Student</option>
           <option value="ADMIN">Admin</option>
@@ -418,7 +563,12 @@ function UserForm({ form, setForm, showPassword, error }: {
   )
 }
 
-function ModalFooter({ onClose, onConfirm, confirmLabel, saving }: {
+function ModalFooter({
+  onClose,
+  onConfirm,
+  confirmLabel,
+  saving,
+}: {
   onClose: () => void
   onConfirm: () => void
   confirmLabel: string
@@ -426,7 +576,12 @@ function ModalFooter({ onClose, onConfirm, confirmLabel, saving }: {
 }) {
   return (
     <div className="flex justify-end gap-2 mt-4">
-      <button onClick={onClose} className="px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">Cancel</button>
+      <button
+        onClick={onClose}
+        className="px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg"
+      >
+        Cancel
+      </button>
       <button onClick={onConfirm} disabled={saving} className="btn-3d-indigo disabled:opacity-50">
         {saving ? 'Saving…' : confirmLabel}
       </button>

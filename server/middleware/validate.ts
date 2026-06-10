@@ -7,8 +7,8 @@ export function validate(schema: ZodSchema) {
     if (!result.success) {
       // Zod v4 renamed `.errors` to `.issues`; fall back for safety across versions.
       const zodErr = result.error as ZodError
-      const issues = (zodErr.issues ?? (zodErr as any).errors ?? [])
-      const errors = issues.map(e => ({
+      const issues = zodErr.issues ?? (zodErr as any).errors ?? []
+      const errors = issues.map((e) => ({
         field: e.path.join('.'),
         message: e.message,
       }))

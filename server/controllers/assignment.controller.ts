@@ -6,13 +6,28 @@ import { createCalendarEvent } from '../services/google.service.js'
 import { logger } from '../lib/logger.js'
 
 export async function createAssignment(req: AuthRequest, res: Response) {
-  const { classroomId, title, instructions, type, dueDate, totalPoints, timeLimit, questions, subject, unitName, resubmissionsAllowed, maxResubmissions } = req.body
+  const {
+    classroomId,
+    title,
+    instructions,
+    type,
+    dueDate,
+    totalPoints,
+    timeLimit,
+    questions,
+    subject,
+    unitName,
+    resubmissionsAllowed,
+    maxResubmissions,
+  } = req.body
   if (!classroomId || !title || !type) {
-    res.status(400).json({ error: 'classroomId, title, and type are required' }); return
+    res.status(400).json({ error: 'classroomId, title, and type are required' })
+    return
   }
   const classroom = await prisma.classroom.findUnique({ where: { id: classroomId } })
   if (!classroom || classroom.teacherId !== req.user!.id) {
-    res.status(403).json({ error: 'Not your classroom' }); return
+    res.status(403).json({ error: 'Not your classroom' })
+    return
   }
   const assignment = await prisma.assignment.create({
     data: {
@@ -27,16 +42,18 @@ export async function createAssignment(req: AuthRequest, res: Response) {
       unitName: unitName ?? null,
       resubmissionsAllowed: resubmissionsAllowed ?? false,
       maxResubmissions: maxResubmissions ?? 0,
-      questions: questions?.length ? {
-        create: questions.map((q: any) => ({
-          text: q.text,
-          type: q.type,
-          options: q.options ?? null,
-          correctAnswer: q.correctAnswer ?? null,
-          tags: q.tags ?? [],
-          points: q.points ?? 10,
-        })),
-      } : undefined,
+      questions: questions?.length
+        ? {
+            create: questions.map((q: any) => ({
+              text: q.text,
+              type: q.type,
+              options: q.options ?? null,
+              correctAnswer: q.correctAnswer ?? null,
+              tags: q.tags ?? [],
+              points: q.points ?? 10,
+            })),
+          }
+        : undefined,
     },
     include: { questions: true },
   })
@@ -44,20 +61,38 @@ export async function createAssignment(req: AuthRequest, res: Response) {
 
   // Silent Google Calendar sync — never fails the request
   if (assignment.dueDate) {
-    prisma.user.findUnique({
-      where: { id: req.user!.id },
-      select: { googleCalendarLinked: true, googleAccessToken: true, googleRefreshToken: true, googleTokenExpiry: true },
-    }).then(teacher => {
-      if (teacher?.googleCalendarLinked && teacher.googleAccessToken && teacher.googleRefreshToken) {
-        createCalendarEvent(
-          req.user!.id,
-          teacher.googleAccessToken,
-          teacher.googleRefreshToken,
-          teacher.googleTokenExpiry,
-          { title: assignment.title, description: 'Assignment due date', dueDate: assignment.dueDate! },
-        )
-      }
-    }).catch((e: Error) => logger.warn({ err: e.message }, '[assignment] calendar sync failed (non-critical)'))
+    prisma.user
+      .findUnique({
+        where: { id: req.user!.id },
+        select: {
+          googleCalendarLinked: true,
+          googleAccessToken: true,
+          googleRefreshToken: true,
+          googleTokenExpiry: true,
+        },
+      })
+      .then((teacher) => {
+        if (
+          teacher?.googleCalendarLinked &&
+          teacher.googleAccessToken &&
+          teacher.googleRefreshToken
+        ) {
+          createCalendarEvent(
+            req.user!.id,
+            teacher.googleAccessToken,
+            teacher.googleRefreshToken,
+            teacher.googleTokenExpiry,
+            {
+              title: assignment.title,
+              description: 'Assignment due date',
+              dueDate: assignment.dueDate!,
+            }
+          )
+        }
+      })
+      .catch((e: Error) =>
+        logger.warn({ err: e.message }, '[assignment] calendar sync failed (non-critical)')
+      )
   }
 }
 
@@ -66,18 +101,35 @@ export async function getAssignment(req: AuthRequest, res: Response) {
     where: { id: req.params.id },
     include: { questions: true, classroom: true },
   })
-  if (!assignment) { res.status(404).json({ error: 'Not found' }); return }
+  if (!assignment) {
+    res.status(404).json({ error: 'Not found' })
+    return
+  }
 
   const user = req.user!
-  if (user.role === 'ADMIN') { res.json(assignment); return }
-  if (user.role === 'TEACHER' && assignment.classroom.teacherId === user.id) { res.json(assignment); return }
+  if (user.role === 'ADMIN') {
+    res.json(assignment)
+    return
+  }
+  if (user.role === 'TEACHER' && assignment.classroom.teacherId === user.id) {
+    res.json(assignment)
+    return
+  }
   if (user.role === 'STUDENT') {
-    const enrolled = await prisma.enrollment.findFirst({ where: { classroomId: assignment.classroomId, studentId: user.id } })
+    const enrolled = await prisma.enrollment.findFirst({
+      where: { classroomId: assignment.classroomId, studentId: user.id },
+    })
     if (enrolled) {
       // Include only this student's own submission so they can view/resubmit.
       const mySubmission = await prisma.submission.findFirst({
         where: { assignmentId: assignment.id, studentId: user.id },
-        select: { id: true, status: true, totalScore: true, resubmissionCount: true, submittedAt: true },
+        select: {
+          id: true,
+          status: true,
+          totalScore: true,
+          resubmissionCount: true,
+          submittedAt: true,
+        },
       })
       res.json({ ...assignment, submissions: mySubmission ? [mySubmission] : [] })
       return
@@ -92,7 +144,8 @@ export async function updateAssignment(req: AuthRequest, res: Response) {
     include: { classroom: true },
   })
   if (!assignment || assignment.classroom.teacherId !== req.user!.id) {
-    res.status(403).json({ error: 'Forbidden' }); return
+    res.status(403).json({ error: 'Forbidden' })
+    return
   }
   const { title, instructions, dueDate, totalPoints, status, timeLimit, rubricId } = req.body
   const updated = await prisma.assignment.update({
@@ -116,15 +169,17 @@ export async function updateAssignment(req: AuthRequest, res: Response) {
       where: { classroomId: assignment.classroomId },
       select: { studentId: true },
     })
-    await Promise.all(enrollments.map(e =>
-      createNotification(
-        e.studentId,
-        'NEW_ASSIGNMENT',
-        `New assignment: ${updated.title}`,
-        `A new assignment has been published in ${assignment.classroom.name}.`,
-        `/student/assignment/${updated.id}`,
+    await Promise.all(
+      enrollments.map((e) =>
+        createNotification(
+          e.studentId,
+          'NEW_ASSIGNMENT',
+          `New assignment: ${updated.title}`,
+          `A new assignment has been published in ${assignment.classroom.name}.`,
+          `/student/assignment/${updated.id}`
+        )
       )
-    ))
+    )
   }
 }
 
@@ -133,14 +188,23 @@ export async function getClassroomAssignments(req: AuthRequest, res: Response) {
   const user = req.user!
 
   const classroom = await prisma.classroom.findUnique({ where: { id: classroomId } })
-  if (!classroom) { res.status(404).json({ error: 'Not found' }); return }
+  if (!classroom) {
+    res.status(404).json({ error: 'Not found' })
+    return
+  }
 
   if (user.role !== 'ADMIN' && classroom.teacherId !== user.id) {
     if (user.role === 'STUDENT') {
-      const enrolled = await prisma.enrollment.findFirst({ where: { classroomId, studentId: user.id } })
-      if (!enrolled) { res.status(403).json({ error: 'Forbidden' }); return }
+      const enrolled = await prisma.enrollment.findFirst({
+        where: { classroomId, studentId: user.id },
+      })
+      if (!enrolled) {
+        res.status(403).json({ error: 'Forbidden' })
+        return
+      }
     } else {
-      res.status(403).json({ error: 'Forbidden' }); return
+      res.status(403).json({ error: 'Forbidden' })
+      return
     }
   }
 
@@ -157,7 +221,7 @@ export async function getAllTeacherAssignments(req: AuthRequest, res: Response) 
     where: { teacherId: req.user!.id },
     select: { id: true },
   })
-  const classroomIds = classrooms.map(c => c.id)
+  const classroomIds = classrooms.map((c) => c.id)
   const assignments = await prisma.assignment.findMany({
     where: { classroomId: { in: classroomIds } },
     include: {
@@ -174,12 +238,15 @@ export async function getStudentAssignments(req: AuthRequest, res: Response) {
     where: { studentId: req.user!.id },
     select: { classroomId: true },
   })
-  const classroomIds = enrollments.map(e => e.classroomId)
+  const classroomIds = enrollments.map((e) => e.classroomId)
   const assignments = await prisma.assignment.findMany({
     where: { classroomId: { in: classroomIds }, status: 'PUBLISHED' },
     include: {
       classroom: { select: { name: true } },
-      submissions: { where: { studentId: req.user!.id }, select: { id: true, status: true, totalScore: true } },
+      submissions: {
+        where: { studentId: req.user!.id },
+        select: { id: true, status: true, totalScore: true },
+      },
       _count: { select: { questions: true } },
     },
     orderBy: { dueDate: 'asc' },

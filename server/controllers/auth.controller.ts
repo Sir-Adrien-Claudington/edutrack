@@ -30,7 +30,10 @@ export async function register(req: Request, res: Response) {
     return
   }
   const pwError = validatePassword(password)
-  if (pwError) { res.status(400).json({ error: pwError }); return }
+  if (pwError) {
+    res.status(400).json({ error: pwError })
+    return
+  }
 
   const existing = await prisma.user.findUnique({ where: { email } })
   if (existing) {
@@ -58,18 +61,31 @@ export async function login(req: Request, res: Response) {
       where: { username },
       include: { enrollments: { include: { classroom: true } } },
     })
-    if (!user) { res.status(401).json({ error: 'Invalid credentials' }); return }
-    if (user.suspended) { res.status(403).json({ error: 'Account suspended' }); return }
-    const matchingClass = user.enrollments.find(e => e.classroom.classCode === classCode)
+    if (!user) {
+      res.status(401).json({ error: 'Invalid credentials' })
+      return
+    }
+    if (user.suspended) {
+      res.status(403).json({ error: 'Account suspended' })
+      return
+    }
+    const matchingClass = user.enrollments.find((e) => e.classroom.classCode === classCode)
     if (!matchingClass) {
-      logger.warn({ event: 'LOGIN_FAILED', username }, 'login failed: invalid username or class code')
-      res.status(401).json({ error: 'Invalid username or class code' }); return
+      logger.warn(
+        { event: 'LOGIN_FAILED', username },
+        'login failed: invalid username or class code'
+      )
+      res.status(401).json({ error: 'Invalid username or class code' })
+      return
     }
     await prisma.user.update({ where: { id: user.id }, data: { lastLoginAt: new Date() } })
     logger.info({ event: 'LOGIN_SUCCESS', userId: user.id, role: user.role }, 'login success')
     const tokens = generateTokens(user)
     setRefreshCookie(res, tokens.refresh)
-    res.json({ user: { id: user.id, email: user.email, name: user.name, role: user.role }, access: tokens.access })
+    res.json({
+      user: { id: user.id, email: user.email, name: user.name, role: user.role },
+      access: tokens.access,
+    })
     return
   }
 
@@ -89,14 +105,19 @@ export async function login(req: Request, res: Response) {
   }
   const valid = await bcrypt.compare(password, user.passwordHash)
   if (!valid) {
-    logger.warn({ event: 'LOGIN_FAILED', email: email.toLowerCase().trim() }, 'login failed: invalid password')
+    logger.warn(
+      { event: 'LOGIN_FAILED', email: email.toLowerCase().trim() },
+      'login failed: invalid password'
+    )
     res.status(401).json({ error: 'Invalid credentials' })
     return
   }
 
   // MFA gate — if enabled, return a short-lived token instead of full session
   if (user.mfaEnabled) {
-    const mfaToken = jwt.sign({ id: user.id, scope: 'mfa' }, process.env.JWT_SECRET!, { expiresIn: '5m' })
+    const mfaToken = jwt.sign({ id: user.id, scope: 'mfa' }, process.env.JWT_SECRET!, {
+      expiresIn: '5m',
+    })
     res.json({ requiresMfa: true, mfaToken })
     return
   }
@@ -118,7 +139,10 @@ export async function refresh(req: Request, res: Response) {
     return
   }
   try {
-    const payload = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET!) as { id: string; tv?: number }
+    const payload = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET!) as {
+      id: string
+      tv?: number
+    }
     const user = await prisma.user.findUnique({ where: { id: payload.id } })
     if (!user) {
       res.status(401).json({ error: 'User not found' })
@@ -146,10 +170,12 @@ export async function refresh(req: Request, res: Response) {
 
 export async function logout(req: AuthRequest, res: Response) {
   if (req.user) {
-    await prisma.user.update({
-      where: { id: req.user.id },
-      data: { tokenVersion: { increment: 1 } },
-    }).catch((e: Error) => logger.error({ err: e.message }, '[auth] tokenVersion increment failed'))
+    await prisma.user
+      .update({
+        where: { id: req.user.id },
+        data: { tokenVersion: { increment: 1 } },
+      })
+      .catch((e: Error) => logger.error({ err: e.message }, '[auth] tokenVersion increment failed'))
   }
   clearRefreshCookie(res)
   logger.info({ event: 'LOGOUT', userId: req.user?.id }, 'logout')
@@ -167,8 +193,11 @@ export async function me(req: AuthRequest, res: Response) {
 export async function deleteOwnAccount(req: AuthRequest, res: Response) {
   const userId = req.user!.id
   // Increment tokenVersion first to invalidate all existing sessions
-  await prisma.user.update({ where: { id: userId }, data: { tokenVersion: { increment: 1 } } })
-    .catch((e: Error) => logger.error({ err: e.message }, '[auth] tokenVersion increment on delete failed'))
+  await prisma.user
+    .update({ where: { id: userId }, data: { tokenVersion: { increment: 1 } } })
+    .catch((e: Error) =>
+      logger.error({ err: e.message }, '[auth] tokenVersion increment on delete failed')
+    )
   await prisma.user.delete({ where: { id: userId } })
   clearRefreshCookie(res)
   res.json({ ok: true })

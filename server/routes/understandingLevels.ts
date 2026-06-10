@@ -1,6 +1,12 @@
 import { Router } from 'express'
 import { authenticate, requireRole } from '../middleware/auth.js'
-import { getLevels, createLevel, updateLevel, deleteLevel, reorderLevels } from '../controllers/understandingLevels.controller.js'
+import {
+  getLevels,
+  createLevel,
+  updateLevel,
+  deleteLevel,
+  reorderLevels,
+} from '../controllers/understandingLevels.controller.js'
 
 const router = Router()
 router.use(authenticate, requireRole('TEACHER'))

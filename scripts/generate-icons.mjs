@@ -22,8 +22,14 @@ for (const size of sizes) {
 }
 
 // PWA icons for web/iPad
-await sharp(svg).resize(512, 512).png().toFile(join(root, 'public', 'icon-512.png'))
-await sharp(svg).resize(192, 192).png().toFile(join(root, 'public', 'icon-192.png'))
+await sharp(svg)
+  .resize(512, 512)
+  .png()
+  .toFile(join(root, 'public', 'icon-512.png'))
+await sharp(svg)
+  .resize(192, 192)
+  .png()
+  .toFile(join(root, 'public', 'icon-192.png'))
 
 // Linux/Mac icon
 writeFileSync(join(root, 'build', 'icon.png'), readFileSync(paths[512]))
@@ -32,4 +38,6 @@ writeFileSync(join(root, 'build', 'icon.png'), readFileSync(paths[512]))
 const icoBuf = await pngToIco([paths[16], paths[32], paths[48], paths[64], paths[128], paths[256]])
 writeFileSync(join(root, 'build', 'icon.ico'), icoBuf)
 
-console.log('Icons generated: build/icon.ico  build/icon.png  public/icon-512.png  public/icon-192.png')
+console.log(
+  'Icons generated: build/icon.ico  build/icon.png  public/icon-512.png  public/icon-192.png'
+)

@@ -50,14 +50,20 @@ export default function Login() {
         <div className="flex gap-1 bg-gray-100 dark:bg-gray-700 rounded-lg p-1 mb-6">
           <button
             type="button"
-            onClick={() => { setMode('email'); setError('') }}
+            onClick={() => {
+              setMode('email')
+              setError('')
+            }}
             className={`flex-1 py-1.5 rounded-md text-sm font-medium transition-colors ${mode === 'email' ? 'bg-white dark:bg-gray-600 shadow-sm text-gray-900 dark:text-white' : 'text-gray-500 dark:text-gray-400'}`}
           >
             Email login
           </button>
           <button
             type="button"
-            onClick={() => { setMode('username'); setError('') }}
+            onClick={() => {
+              setMode('username')
+              setError('')
+            }}
             className={`flex-1 py-1.5 rounded-md text-sm font-medium transition-colors ${mode === 'username' ? 'bg-white dark:bg-gray-600 shadow-sm text-gray-900 dark:text-white' : 'text-gray-500 dark:text-gray-400'}`}
           >
             Class login
@@ -74,22 +80,26 @@ export default function Login() {
           {mode === 'email' ? (
             <>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Email</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Email
+                </label>
                 <input
                   type="email"
                   value={email}
-                  onChange={e => setEmail(e.target.value)}
+                  onChange={(e) => setEmail(e.target.value)}
                   className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
                   placeholder="you@school.com"
                   required
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Password</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Password
+                </label>
                 <input
                   type="password"
                   value={password}
-                  onChange={e => setPassword(e.target.value)}
+                  onChange={(e) => setPassword(e.target.value)}
                   className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
                   placeholder="••••••••"
                   required
@@ -99,25 +109,31 @@ export default function Login() {
           ) : (
             <>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Username</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Username
+                </label>
                 <input
                   value={username}
-                  onChange={e => setUsername(e.target.value)}
+                  onChange={(e) => setUsername(e.target.value)}
                   className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
                   placeholder="e.g. alice.j"
                   required
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Class code</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Class code
+                </label>
                 <input
                   value={classCode}
-                  onChange={e => setClassCode(e.target.value.toUpperCase())}
+                  onChange={(e) => setClassCode(e.target.value.toUpperCase())}
                   className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500 font-mono tracking-widest"
                   placeholder="e.g. BIO101"
                   required
                 />
-                <p className="mt-1.5 text-xs text-gray-400">Your teacher will give you the class code.</p>
+                <p className="mt-1.5 text-xs text-gray-400">
+                  Your teacher will give you the class code.
+                </p>
               </div>
             </>
           )}
@@ -140,9 +156,13 @@ export default function Login() {
           </p>
         )}
         <p className="mt-4 text-center text-xs text-gray-400 dark:text-gray-500">
-          <Link to="/privacy" className="hover:underline">Privacy Policy</Link>
+          <Link to="/privacy" className="hover:underline">
+            Privacy Policy
+          </Link>
           {' · '}
-          <Link to="/terms" className="hover:underline">Terms of Service</Link>
+          <Link to="/terms" className="hover:underline">
+            Terms of Service
+          </Link>
         </p>
       </div>
     </div>

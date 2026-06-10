@@ -4,7 +4,9 @@ import { prisma } from '../prisma/client.js'
 import { AuthRequest } from '../middleware/auth.js'
 import { nanoid } from 'nanoid'
 
-function strip<T extends { classPasswordHash?: string | null }>(obj: T): Omit<T, 'classPasswordHash'> {
+function strip<T extends { classPasswordHash?: string | null }>(
+  obj: T
+): Omit<T, 'classPasswordHash'> {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { classPasswordHash: _, ...rest } = obj
   return rest
@@ -12,7 +14,10 @@ function strip<T extends { classPasswordHash?: string | null }>(obj: T): Omit<T,
 
 export async function createClassroom(req: AuthRequest, res: Response) {
   const { name, yearLevel, classPassword } = req.body
-  if (!name) { res.status(400).json({ error: 'Name is required' }); return }
+  if (!name) {
+    res.status(400).json({ error: 'Name is required' })
+    return
+  }
   const classCode = nanoid(6).toUpperCase()
   const classroom = await prisma.classroom.create({
     data: {
@@ -30,14 +35,20 @@ export async function updateClassroom(req: AuthRequest, res: Response) {
   const { name, yearLevel, classPassword } = req.body
   const classroom = await prisma.classroom.findUnique({ where: { id: req.params.id } })
   if (!classroom || classroom.teacherId !== req.user!.id) {
-    res.status(403).json({ error: 'Forbidden' }); return
+    res.status(403).json({ error: 'Forbidden' })
+    return
   }
   const updated = await prisma.classroom.update({
     where: { id: req.params.id },
     data: {
       ...(name && { name }),
       yearLevel: yearLevel !== undefined ? (yearLevel ? Number(yearLevel) : null) : undefined,
-      classPasswordHash: classPassword !== undefined ? (classPassword ? await bcrypt.hash(classPassword, 12) : null) : undefined,
+      classPasswordHash:
+        classPassword !== undefined
+          ? classPassword
+            ? await bcrypt.hash(classPassword, 12)
+            : null
+          : undefined,
     },
   })
   res.json(strip(updated))
@@ -59,7 +70,7 @@ export async function getMyClassrooms(req: AuthRequest, res: Response) {
         },
       },
     })
-    res.json(enrollments.map(e => strip(e.classroom)))
+    res.json(enrollments.map((e) => strip(e.classroom)))
   }
 }
 
@@ -70,7 +81,14 @@ export async function getClassroom(req: AuthRequest, res: Response) {
       enrollments: {
         include: {
           student: {
-            select: { id: true, name: true, email: true, username: true, yearLevel: true, teacherCreated: true },
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              username: true,
+              yearLevel: true,
+              teacherCreated: true,
+            },
           },
         },
       },
@@ -80,19 +98,26 @@ export async function getClassroom(req: AuthRequest, res: Response) {
       },
     },
   })
-  if (!classroom) { res.status(404).json({ error: 'Classroom not found' }); return }
+  if (!classroom) {
+    res.status(404).json({ error: 'Classroom not found' })
+    return
+  }
 
   const user = req.user!
   if (user.role === 'TEACHER' && classroom.teacherId !== user.id) {
-    res.status(403).json({ error: 'Forbidden' }); return
+    res.status(403).json({ error: 'Forbidden' })
+    return
   }
   if (user.role === 'STUDENT') {
-    const enrolled = classroom.enrollments.some(e => e.studentId === user.id)
-    if (!enrolled) { res.status(403).json({ error: 'Forbidden' }); return }
+    const enrolled = classroom.enrollments.some((e) => e.studentId === user.id)
+    if (!enrolled) {
+      res.status(403).json({ error: 'Forbidden' })
+      return
+    }
     // Strip peer student emails — students only see their own email
     res.json({
       ...strip(classroom),
-      enrollments: classroom.enrollments.map(e => ({
+      enrollments: classroom.enrollments.map((e) => ({
         ...e,
         student: {
           id: e.student.id,
@@ -111,33 +136,52 @@ export async function getClassroom(req: AuthRequest, res: Response) {
 
 export async function joinClassroom(req: AuthRequest, res: Response) {
   const { classCode } = req.body
-  if (!classCode) { res.status(400).json({ error: 'Class code is required' }); return }
+  if (!classCode) {
+    res.status(400).json({ error: 'Class code is required' })
+    return
+  }
   const classroom = await prisma.classroom.findUnique({ where: { classCode } })
-  if (!classroom) { res.status(404).json({ error: 'Invalid class code' }); return }
+  if (!classroom) {
+    res.status(404).json({ error: 'Invalid class code' })
+    return
+  }
   const existing = await prisma.enrollment.findUnique({
     where: { studentId_classroomId: { studentId: req.user!.id, classroomId: classroom.id } },
   })
-  if (existing) { res.status(409).json({ error: 'Already enrolled' }); return }
+  if (existing) {
+    res.status(409).json({ error: 'Already enrolled' })
+    return
+  }
   await prisma.enrollment.create({ data: { studentId: req.user!.id, classroomId: classroom.id } })
   res.status(201).json(strip(classroom))
 }
 
 export async function createStudent(req: AuthRequest, res: Response) {
   const { name, username, email, password, yearLevel } = req.body
-  if (!name) { res.status(400).json({ error: 'Name is required' }); return }
+  if (!name) {
+    res.status(400).json({ error: 'Name is required' })
+    return
+  }
 
   const classroom = await prisma.classroom.findUnique({ where: { id: req.params.id } })
   if (!classroom || classroom.teacherId !== req.user!.id) {
-    res.status(403).json({ error: 'Forbidden' }); return
+    res.status(403).json({ error: 'Forbidden' })
+    return
   }
 
   if (username) {
     const existing = await prisma.user.findUnique({ where: { username } })
-    if (existing) { res.status(409).json({ error: 'Username already taken' }); return }
+    if (existing) {
+      res.status(409).json({ error: 'Username already taken' })
+      return
+    }
   }
   if (email) {
     const existing = await prisma.user.findUnique({ where: { email } })
-    if (existing) { res.status(409).json({ error: 'Email already in use' }); return }
+    if (existing) {
+      res.status(409).json({ error: 'Email already in use' })
+      return
+    }
   }
 
   const passwordHash = password ? await bcrypt.hash(password, 12) : undefined
@@ -156,8 +200,12 @@ export async function createStudent(req: AuthRequest, res: Response) {
   await prisma.enrollment.create({ data: { studentId: student.id, classroomId: classroom.id } })
 
   res.status(201).json({
-    id: student.id, name: student.name, email: student.email,
-    username: student.username, yearLevel: student.yearLevel, teacherCreated: student.teacherCreated,
+    id: student.id,
+    name: student.name,
+    email: student.email,
+    username: student.username,
+    yearLevel: student.yearLevel,
+    teacherCreated: student.teacherCreated,
   })
 }
 
@@ -165,44 +213,61 @@ export async function updateStudent(req: AuthRequest, res: Response) {
   const { name, username, email, yearLevel } = req.body
   const classroom = await prisma.classroom.findUnique({ where: { id: req.params.id } })
   if (!classroom || classroom.teacherId !== req.user!.id) {
-    res.status(403).json({ error: 'Forbidden' }); return
+    res.status(403).json({ error: 'Forbidden' })
+    return
   }
   const enrollment = await prisma.enrollment.findUnique({
-    where: { studentId_classroomId: { studentId: req.params.studentId, classroomId: req.params.id } },
+    where: {
+      studentId_classroomId: { studentId: req.params.studentId, classroomId: req.params.id },
+    },
   })
-  if (!enrollment) { res.status(404).json({ error: 'Student not found in this classroom' }); return }
+  if (!enrollment) {
+    res.status(404).json({ error: 'Student not found in this classroom' })
+    return
+  }
 
   const student = await prisma.user.update({
     where: { id: req.params.studentId },
     data: {
       ...(name && { name }),
-      username: username !== undefined ? (username || null) : undefined,
-      email: email !== undefined ? (email || null) : undefined,
+      username: username !== undefined ? username || null : undefined,
+      email: email !== undefined ? email || null : undefined,
       yearLevel: yearLevel !== undefined ? (yearLevel ? Number(yearLevel) : null) : undefined,
     },
   })
   res.json({
-    id: student.id, name: student.name, email: student.email,
-    username: student.username, yearLevel: student.yearLevel, teacherCreated: student.teacherCreated,
+    id: student.id,
+    name: student.name,
+    email: student.email,
+    username: student.username,
+    yearLevel: student.yearLevel,
+    teacherCreated: student.teacherCreated,
   })
 }
 
 export async function removeStudent(req: AuthRequest, res: Response) {
   const classroom = await prisma.classroom.findUnique({ where: { id: req.params.id } })
   if (!classroom || classroom.teacherId !== req.user!.id) {
-    res.status(403).json({ error: 'Forbidden' }); return
+    res.status(403).json({ error: 'Forbidden' })
+    return
   }
   const student = await prisma.user.findUnique({ where: { id: req.params.studentId } })
-  if (!student) { res.status(404).json({ error: 'Student not found' }); return }
+  if (!student) {
+    res.status(404).json({ error: 'Student not found' })
+    return
+  }
   const enrollment = await prisma.enrollment.findUnique({
     where: { studentId_classroomId: { studentId: student.id, classroomId: req.params.id } },
   })
-  if (!enrollment) { res.status(404).json({ error: 'Student not found in this classroom' }); return }
+  if (!enrollment) {
+    res.status(404).json({ error: 'Student not found in this classroom' })
+    return
+  }
 
   if (student.teacherCreated) {
-    await prisma.$transaction(async tx => {
+    await prisma.$transaction(async (tx) => {
       const submissions = await tx.submission.findMany({ where: { studentId: student.id } })
-      const subIds = submissions.map(s => s.id)
+      const subIds = submissions.map((s) => s.id)
       await tx.feedback.deleteMany({ where: { submissionId: { in: subIds } } })
       await tx.answer.deleteMany({ where: { submissionId: { in: subIds } } })
       await tx.submission.deleteMany({ where: { studentId: student.id } })

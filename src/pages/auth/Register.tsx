@@ -4,18 +4,37 @@ import { useAuthStore } from '../../store/auth.store'
 
 const PW_RULES = [
   { label: 'At least 8 characters', test: (p: string) => p.length >= 8 },
-  { label: 'Contains a number or special character (!@#$…)', test: (p: string) => /[0-9!@#$%^&*()\-_=+[\]{};':"\\|,.<>/?`~]/.test(p) },
+  {
+    label: 'Contains a number or special character (!@#$…)',
+    test: (p: string) => /[0-9!@#$%^&*()\-_=+[\]{};':"\\|,.<>/?`~]/.test(p),
+  },
 ]
 
 function CheckIcon({ ok, touched }: { ok: boolean; touched: boolean }) {
-  if (!touched) return <span className="w-4 h-4 rounded-full border border-gray-300 inline-block flex-shrink-0" />
-  if (ok) return (
-    <svg className="w-4 h-4 text-green-500 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-    </svg>
-  )
+  if (!touched)
+    return (
+      <span className="w-4 h-4 rounded-full border border-gray-300 inline-block flex-shrink-0" />
+    )
+  if (ok)
+    return (
+      <svg
+        className="w-4 h-4 text-green-500 flex-shrink-0"
+        fill="none"
+        viewBox="0 0 24 24"
+        stroke="currentColor"
+        strokeWidth={2.5}
+      >
+        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+      </svg>
+    )
   return (
-    <svg className="w-4 h-4 text-red-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+    <svg
+      className="w-4 h-4 text-red-400 flex-shrink-0"
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke="currentColor"
+      strokeWidth={2.5}
+    >
       <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
     </svg>
   )
@@ -26,14 +45,14 @@ export default function Register() {
   const [passwordTouched, setPasswordTouched] = useState(false)
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
-  const register = useAuthStore(s => s.register)
+  const register = useAuthStore((s) => s.register)
   const navigate = useNavigate()
 
   function update(field: string, value: string) {
-    setForm(f => ({ ...f, [field]: value }))
+    setForm((f) => ({ ...f, [field]: value }))
   }
 
-  const allRulesMet = PW_RULES.every(r => r.test(form.password))
+  const allRulesMet = PW_RULES.every((r) => r.test(form.password))
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -55,7 +74,9 @@ export default function Register() {
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center p-4">
       <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 w-full max-w-md p-8">
         <div className="mb-8">
-          <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">Create an account</h1>
+          <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">
+            Create an account
+          </h1>
           <p className="text-gray-500 dark:text-gray-400 mt-1">Join EduTrack today</p>
         </div>
 
@@ -67,45 +88,60 @@ export default function Register() {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Full name</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Full name
+            </label>
             <input
               value={form.name}
-              onChange={e => update('name', e.target.value)}
+              onChange={(e) => update('name', e.target.value)}
               className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
               placeholder="Jane Smith"
               required
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Email</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Email
+            </label>
             <input
               type="email"
               value={form.email}
-              onChange={e => update('email', e.target.value)}
+              onChange={(e) => update('email', e.target.value)}
               className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
               placeholder="you@school.com"
               required
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Password</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Password
+            </label>
             <input
               type="password"
               value={form.password}
-              onChange={e => { update('password', e.target.value); setPasswordTouched(true) }}
+              onChange={(e) => {
+                update('password', e.target.value)
+                setPasswordTouched(true)
+              }}
               className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
               placeholder="••••••••"
               required
             />
             <ul className="mt-2 space-y-1">
-              {PW_RULES.map(rule => {
+              {PW_RULES.map((rule) => {
                 const ok = rule.test(form.password)
                 return (
                   <li key={rule.label} className="flex items-center gap-2">
                     <CheckIcon ok={ok} touched={passwordTouched} />
-                    <span className={`text-xs transition-colors ${
-                      !passwordTouched ? 'text-gray-400 dark:text-gray-500' : ok ? 'text-green-600 dark:text-green-400' : 'text-red-500 dark:text-red-400'
-                    }`}>
+                    <span
+                      className={`text-xs transition-colors ${
+                        !passwordTouched
+                          ? 'text-gray-400 dark:text-gray-500'
+                          : ok
+                            ? 'text-green-600 dark:text-green-400'
+                            : 'text-red-500 dark:text-red-400'
+                      }`}
+                    >
                       {rule.label}
                     </span>
                   </li>
@@ -114,9 +150,11 @@ export default function Register() {
             </ul>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">I am a…</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              I am a…
+            </label>
             <div className="grid grid-cols-2 gap-3">
-              {['TEACHER', 'STUDENT'].map(r => (
+              {['TEACHER', 'STUDENT'].map((r) => (
                 <button
                   key={r}
                   type="button"
@@ -147,15 +185,22 @@ export default function Register() {
 
         <p className="mt-6 text-center text-sm text-gray-500 dark:text-gray-400">
           Already have an account?{' '}
-          <Link to="/login" className="text-indigo-600 dark:text-indigo-400 font-medium hover:underline">
+          <Link
+            to="/login"
+            className="text-indigo-600 dark:text-indigo-400 font-medium hover:underline"
+          >
             Sign in
           </Link>
         </p>
         <p className="mt-4 text-center text-xs text-gray-400 dark:text-gray-500">
           By creating an account you agree to our{' '}
-          <Link to="/terms" className="hover:underline">Terms of Service</Link>
-          {' '}and{' '}
-          <Link to="/privacy" className="hover:underline">Privacy Policy</Link>
+          <Link to="/terms" className="hover:underline">
+            Terms of Service
+          </Link>{' '}
+          and{' '}
+          <Link to="/privacy" className="hover:underline">
+            Privacy Policy
+          </Link>
         </p>
       </div>
     </div>

@@ -16,10 +16,13 @@ interface BoundaryState {
   save: (boundaries: Boundary[]) => Promise<void>
 }
 
-export function getGrade(score: number | null | undefined, boundaries: Boundary[]): { label: string; colour: string } | null {
+export function getGrade(
+  score: number | null | undefined,
+  boundaries: Boundary[]
+): { label: string; colour: string } | null {
   if (score === null || score === undefined) return null
   const sorted = [...boundaries].sort((a, b) => b.minScore - a.minScore)
-  return sorted.find(b => score >= b.minScore && score <= b.maxScore) ?? null
+  return sorted.find((b) => score >= b.minScore && score <= b.maxScore) ?? null
 }
 
 export const useBoundaryStore = create<BoundaryState>((set) => ({

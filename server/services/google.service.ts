@@ -6,7 +6,7 @@ function makeClient() {
   return new google.auth.OAuth2(
     process.env.GOOGLE_CLIENT_ID,
     process.env.GOOGLE_CLIENT_SECRET,
-    process.env.GOOGLE_REDIRECT_URI,
+    process.env.GOOGLE_REDIRECT_URI
   )
 }
 
@@ -31,7 +31,7 @@ export async function createCalendarEvent(
   accessToken: string,
   refreshToken: string,
   expiryDate: Date | null,
-  event: { title: string; description?: string; dueDate: Date },
+  event: { title: string; description?: string; dueDate: Date }
 ): Promise<void> {
   try {
     const client = makeClient()
@@ -74,6 +74,9 @@ export async function createCalendarEvent(
     })
   } catch (err) {
     // Log message only — full GaxiosError includes Authorization header (bearer token)
-    logger.error({ err: (err as any)?.message ?? String(err) }, '[GoogleCalendar] createCalendarEvent failed')
+    logger.error(
+      { err: (err as any)?.message ?? String(err) },
+      '[GoogleCalendar] createCalendarEvent failed'
+    )
   }
 }

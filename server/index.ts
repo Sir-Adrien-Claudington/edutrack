@@ -16,8 +16,15 @@ Sentry.init({
 })
 
 if (process.env.NODE_ENV === 'production') {
-  const required = ['DATABASE_URL', 'JWT_SECRET', 'JWT_REFRESH_SECRET', 'ANTHROPIC_API_KEY', 'CORS_ORIGIN', 'FRONTEND_URL']
-  const missing = required.filter(key => !process.env[key])
+  const required = [
+    'DATABASE_URL',
+    'JWT_SECRET',
+    'JWT_REFRESH_SECRET',
+    'ANTHROPIC_API_KEY',
+    'CORS_ORIGIN',
+    'FRONTEND_URL',
+  ]
+  const missing = required.filter((key) => !process.env[key])
   if (missing.length > 0) {
     logger.error({ missing }, 'Missing required production env vars')
     process.exit(1)
@@ -34,7 +41,6 @@ app.listen(PORT, () => {
 })
 
 export default app
-
 
 function startReminderScheduler() {
   runDailyReminders()
@@ -56,7 +62,10 @@ async function runDataRetentionPurge() {
     ])
 
     if (notifs.count || auditLogs.count || messages.count) {
-      logger.info({ notifs: notifs.count, auditLogs: auditLogs.count, messages: messages.count }, 'Data retention purge complete')
+      logger.info(
+        { notifs: notifs.count, auditLogs: auditLogs.count, messages: messages.count },
+        'Data retention purge complete'
+      )
     }
   } catch (err: any) {
     logger.error({ err: err?.message }, 'Data retention purge failed')
@@ -76,7 +85,11 @@ async function runDailyReminders() {
     for (const assignment of upcoming) {
       for (const { studentId } of assignment.classroom.enrollments) {
         const already = await prisma.notification.findFirst({
-          where: { userId: studentId, type: 'ASSIGNMENT_REMINDER', message: { contains: assignment.id } },
+          where: {
+            userId: studentId,
+            type: 'ASSIGNMENT_REMINDER',
+            message: { contains: assignment.id },
+          },
         })
         if (already) continue
         await prisma.notification.create({
@@ -88,17 +101,33 @@ async function runDailyReminders() {
             link: `/student/assignment/${assignment.id}`,
           },
         })
-        prisma.user.findUnique({
-          where: { id: studentId },
-          select: { googleCalendarLinked: true, googleAccessToken: true, googleRefreshToken: true, googleTokenExpiry: true },
-        }).then(student => {
-          if (student?.googleCalendarLinked && student.googleAccessToken && student.googleRefreshToken && assignment.dueDate) {
-            createCalendarEvent(
-              studentId, student.googleAccessToken, student.googleRefreshToken, student.googleTokenExpiry,
-              { title: `${assignment.title} — due soon`, dueDate: new Date(assignment.dueDate) },
-            ).catch(() => {})
-          }
-        }).catch(() => {})
+        prisma.user
+          .findUnique({
+            where: { id: studentId },
+            select: {
+              googleCalendarLinked: true,
+              googleAccessToken: true,
+              googleRefreshToken: true,
+              googleTokenExpiry: true,
+            },
+          })
+          .then((student) => {
+            if (
+              student?.googleCalendarLinked &&
+              student.googleAccessToken &&
+              student.googleRefreshToken &&
+              assignment.dueDate
+            ) {
+              createCalendarEvent(
+                studentId,
+                student.googleAccessToken,
+                student.googleRefreshToken,
+                student.googleTokenExpiry,
+                { title: `${assignment.title} — due soon`, dueDate: new Date(assignment.dueDate) }
+              ).catch(() => {})
+            }
+          })
+          .catch(() => {})
       }
     }
 
@@ -112,11 +141,17 @@ async function runDailyReminders() {
     })
 
     for (const assignment of justOverdue) {
-      const submittedIds = new Set(assignment.submissions.map(s => s.studentId))
-      const missingCount = assignment.classroom.enrollments.filter(e => !submittedIds.has(e.studentId)).length
+      const submittedIds = new Set(assignment.submissions.map((s) => s.studentId))
+      const missingCount = assignment.classroom.enrollments.filter(
+        (e) => !submittedIds.has(e.studentId)
+      ).length
       if (missingCount === 0) continue
       const already = await prisma.notification.findFirst({
-        where: { userId: assignment.classroom.teacherId, type: 'LATE_SUBMISSIONS', title: assignment.id },
+        where: {
+          userId: assignment.classroom.teacherId,
+          type: 'LATE_SUBMISSIONS',
+          title: assignment.id,
+        },
       })
       if (already) continue
       await prisma.notification.create({

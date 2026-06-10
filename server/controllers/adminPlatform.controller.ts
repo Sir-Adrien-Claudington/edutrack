@@ -3,10 +3,10 @@ import { prisma } from '../prisma/client.js'
 import type { AuthRequest } from '../middleware/auth.js'
 
 const DEFAULT_SETTINGS = [
-  { key: 'aiEnabled',                    value: 'true'  },
-  { key: 'pdfExportEnabled',             value: 'true'  },
-  { key: 'studentRegistrationEnabled',   value: 'true'  },
-  { key: 'analyticsEnabled',             value: 'true'  },
+  { key: 'aiEnabled', value: 'true' },
+  { key: 'pdfExportEnabled', value: 'true' },
+  { key: 'studentRegistrationEnabled', value: 'true' },
+  { key: 'analyticsEnabled', value: 'true' },
 ]
 
 export async function getSettings(req: AuthRequest, res: Response) {
@@ -20,9 +20,14 @@ export async function getSettings(req: AuthRequest, res: Response) {
 
 export async function updateSettings(req: AuthRequest, res: Response) {
   const updates: { key: string; value: string }[] = req.body
-  if (!Array.isArray(updates)) { res.status(400).json({ error: 'Expected array of { key, value }' }); return }
+  if (!Array.isArray(updates)) {
+    res.status(400).json({ error: 'Expected array of { key, value }' })
+    return
+  }
   const results = await Promise.all(
-    updates.map(u => prisma.platformSetting.update({ where: { key: u.key }, data: { value: u.value } }))
+    updates.map((u) =>
+      prisma.platformSetting.update({ where: { key: u.key }, data: { value: u.value } })
+    )
   )
   res.json(results)
 }
@@ -37,7 +42,10 @@ export async function listAnnouncements(req: AuthRequest, res: Response) {
 
 export async function createAnnouncement(req: AuthRequest, res: Response) {
   const { message } = req.body
-  if (!message?.trim()) { res.status(400).json({ error: 'Message required' }); return }
+  if (!message?.trim()) {
+    res.status(400).json({ error: 'Message required' })
+    return
+  }
   const ann = await prisma.announcement.create({
     data: { message, createdById: req.user!.id },
     include: { createdBy: { select: { name: true } } },
@@ -47,7 +55,7 @@ export async function createAnnouncement(req: AuthRequest, res: Response) {
   // Notify all users in bulk
   const users = await prisma.user.findMany({ select: { id: true } })
   await prisma.notification.createMany({
-    data: users.map(u => ({
+    data: users.map((u) => ({
       userId: u.id,
       type: 'ANNOUNCEMENT' as const,
       title: 'Announcement',
@@ -60,7 +68,10 @@ export async function createAnnouncement(req: AuthRequest, res: Response) {
 export async function toggleAnnouncement(req: AuthRequest, res: Response) {
   const { id } = req.params
   const ann = await prisma.announcement.findUnique({ where: { id } })
-  if (!ann) { res.status(404).json({ error: 'Not found' }); return }
+  if (!ann) {
+    res.status(404).json({ error: 'Not found' })
+    return
+  }
   const updated = await prisma.announcement.update({ where: { id }, data: { active: !ann.active } })
   res.json(updated)
 }

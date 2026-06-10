@@ -3,13 +3,14 @@ import { prisma } from '../prisma/client.js'
 import type { AuthRequest } from '../middleware/auth.js'
 
 export async function getPlatformStats(req: AuthRequest, res: Response) {
-  const [userCounts, classroomCount, assignmentCount, submissionCount, gradedCount] = await Promise.all([
-    prisma.user.groupBy({ by: ['role'], _count: { id: true } }),
-    prisma.classroom.count(),
-    prisma.assignment.count(),
-    prisma.submission.count(),
-    prisma.submission.count({ where: { status: 'GRADED' } }),
-  ])
+  const [userCounts, classroomCount, assignmentCount, submissionCount, gradedCount] =
+    await Promise.all([
+      prisma.user.groupBy({ by: ['role'], _count: { id: true } }),
+      prisma.classroom.count(),
+      prisma.assignment.count(),
+      prisma.submission.count(),
+      prisma.submission.count({ where: { status: 'GRADED' } }),
+    ])
 
   const avgScore = await prisma.submission.aggregate({
     _avg: { totalScore: true },
@@ -59,13 +60,15 @@ export async function getUsageStats(req: AuthRequest, res: Response) {
     where: { role: 'TEACHER' },
     include: {
       _count: { select: { taughtClassrooms: true } },
-      taughtClassrooms: { include: { _count: { select: { enrollments: true, assignments: true } } } },
+      taughtClassrooms: {
+        include: { _count: { select: { enrollments: true, assignments: true } } },
+      },
     },
     orderBy: { taughtClassrooms: { _count: 'desc' } },
     take: 10,
   })
 
-  const teacherStats = teachers.map(t => ({
+  const teacherStats = teachers.map((t) => ({
     id: t.id,
     name: t.name,
     email: t.email,

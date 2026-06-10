@@ -1,8 +1,12 @@
 import { Router } from 'express'
 import { authenticate, requireRole } from '../middleware/auth.js'
 import {
-  createAssignment, getAssignment, updateAssignment,
-  getClassroomAssignments, getStudentAssignments, getAllTeacherAssignments,
+  createAssignment,
+  getAssignment,
+  updateAssignment,
+  getClassroomAssignments,
+  getStudentAssignments,
+  getAllTeacherAssignments,
 } from '../controllers/assignment.controller.js'
 import { validate } from '../middleware/validate.js'
 import { createAssignmentSchema, updateAssignmentSchema } from '../schemas/assignment.schema.js'

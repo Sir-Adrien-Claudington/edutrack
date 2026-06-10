@@ -9,15 +9,17 @@ Available as a web app, a Chromebook PWA, and a Windows desktop app.
 ## Access EduTrack
 
 ### Web / Chromebook
+
 Visit **https://edutrack-production-2a6d.up.railway.app** in any browser.
 
 On Chromebook, install it as an app: open the URL in Chrome, then click the install icon in the address bar (or Chrome menu → Install EduTrack). It will appear in your launcher like a native app.
 
 ### Windows Desktop
+
 **[EduTrack v1.9.2 — Windows Installer](https://github.com/Sir-Adrien-Claudington/edutrack/releases/tag/v1.9.2)**
 
-| File | Description |
-|---|---|
+| File                       | Description                            |
+| -------------------------- | -------------------------------------- |
 | `EduTrack Setup 1.9.2.exe` | Installer — recommended for most users |
 
 All versions connect to the same live server. Create an account on first use or sign in with existing credentials.
@@ -27,6 +29,7 @@ All versions connect to the same live server. Create an account on first use or 
 ## Features
 
 ### Teacher
+
 - Create classrooms with class codes and optional passwords
 - Build assignments, quizzes, and exams with multiple question types (multiple choice, true/false, short answer, long answer)
 - Auto-grading for objective questions
@@ -48,6 +51,7 @@ All versions connect to the same live server. Create an account on first use or 
 - Plagiarism detection — auto-runs on every long-answer submission using Claude; flags suspicious matches and notifies the teacher
 
 ### Student
+
 - Dashboard showing enrolled classrooms and upcoming assignments
 - Submit assignments and receive auto-graded results
 - View AI feedback on submissions
@@ -59,26 +63,28 @@ All versions connect to the same live server. Create an account on first use or 
 - In-app notifications — alerts for new assignments and graded work
 
 ### Desktop
+
 - Electron wrapper for a native desktop experience on Windows, Mac, and Linux
 
 ---
 
 ## Tech Stack
 
-| Layer | Technology |
-|---|---|
+| Layer    | Technology                                                         |
+| -------- | ------------------------------------------------------------------ |
 | Frontend | React 19, TypeScript, Vite, Tailwind CSS v4, Zustand, React Router |
-| Backend | Node.js, Express 5, Prisma 5, PostgreSQL |
-| Database | Neon (serverless Postgres) |
-| AI | Anthropic Claude API |
-| Charts | Recharts |
-| Desktop | Electron |
+| Backend  | Node.js, Express 5, Prisma 5, PostgreSQL                           |
+| Database | Neon (serverless Postgres)                                         |
+| AI       | Anthropic Claude API                                               |
+| Charts   | Recharts                                                           |
+| Desktop  | Electron                                                           |
 
 ---
 
 ## Getting Started
 
 ### Prerequisites
+
 - Node.js 18+
 - A [Neon](https://neon.tech) PostgreSQL database (or any PostgreSQL instance)
 - An [Anthropic](https://console.anthropic.com) API key
@@ -129,11 +135,11 @@ npm run dev
 
 After running `npm run seed`, the following accounts are available (all use password `demo1234`):
 
-| Role | Email |
-|---|---|
+| Role    | Email                 |
+| ------- | --------------------- |
 | Teacher | teacher@edutrack.demo |
-| Student | alice@edutrack.demo |
-| Student | bob@edutrack.demo |
+| Student | alice@edutrack.demo   |
+| Student | bob@edutrack.demo     |
 | Student | charlie@edutrack.demo |
 
 Demo class codes: `BIO101` (Year 10 Biology), `MATH01` (Maths)
@@ -142,18 +148,18 @@ Demo class codes: `BIO101` (Year 10 Biology), `MATH01` (Maths)
 
 ## Scripts
 
-| Command | Description |
-|---|---|
-| `npm run dev` | Start frontend + backend together |
-| `npm run server` | Backend only (port 4000) |
-| `npm run dev:client` | Frontend only (port 5173) |
-| `npm run seed` | Seed demo data |
-| `npm run build` | Production build |
-| `npm run electron:dev` | Run as desktop app (dev mode) |
-| `npm run electron:build` | Build desktop installer |
-| `npm run electron:build:prod` | Build installer pointing to live Railway URL |
-| `npx prisma db push --schema=server/prisma/schema.prisma` | Sync database schema |
-| `npx prisma studio --schema=server/prisma/schema.prisma` | Open Prisma Studio |
+| Command                                                   | Description                                  |
+| --------------------------------------------------------- | -------------------------------------------- |
+| `npm run dev`                                             | Start frontend + backend together            |
+| `npm run server`                                          | Backend only (port 4000)                     |
+| `npm run dev:client`                                      | Frontend only (port 5173)                    |
+| `npm run seed`                                            | Seed demo data                               |
+| `npm run build`                                           | Production build                             |
+| `npm run electron:dev`                                    | Run as desktop app (dev mode)                |
+| `npm run electron:build`                                  | Build desktop installer                      |
+| `npm run electron:build:prod`                             | Build installer pointing to live Railway URL |
+| `npx prisma db push --schema=server/prisma/schema.prisma` | Sync database schema                         |
+| `npx prisma studio --schema=server/prisma/schema.prisma`  | Open Prisma Studio                           |
 
 ---
 
@@ -192,9 +198,9 @@ The Electron wrapper loads the bundled React frontend via `file://`. A few thing
 
 ## Environment Variables
 
-| Variable | Description |
-|---|---|
-| `DATABASE_URL` | PostgreSQL connection string |
-| `JWT_SECRET` | Secret key for signing JWT tokens |
-| `ANTHROPIC_API_KEY` | Claude API key for AI feedback |
-| `PORT` | Backend port (default: 4000) |
+| Variable            | Description                       |
+| ------------------- | --------------------------------- |
+| `DATABASE_URL`      | PostgreSQL connection string      |
+| `JWT_SECRET`        | Secret key for signing JWT tokens |
+| `ANTHROPIC_API_KEY` | Claude API key for AI feedback    |
+| `PORT`              | Backend port (default: 4000)      |

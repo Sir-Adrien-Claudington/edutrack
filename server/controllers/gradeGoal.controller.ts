@@ -13,13 +13,19 @@ export async function getMyGradeGoals(req: AuthRequest, res: Response) {
 export async function upsertGradeGoal(req: AuthRequest, res: Response) {
   const { classroomId } = req.params
   const { targetGrade } = req.body
-  if (targetGrade === undefined) { res.status(400).json({ error: 'targetGrade required' }); return }
+  if (targetGrade === undefined) {
+    res.status(400).json({ error: 'targetGrade required' })
+    return
+  }
 
   // Verify student is enrolled in this classroom
   const enrollment = await prisma.enrollment.findUnique({
     where: { studentId_classroomId: { studentId: req.user!.id, classroomId } },
   })
-  if (!enrollment) { res.status(403).json({ error: 'Not enrolled in this classroom' }); return }
+  if (!enrollment) {
+    res.status(403).json({ error: 'Not enrolled in this classroom' })
+    return
+  }
 
   const goal = await prisma.gradeGoal.upsert({
     where: { studentId_classroomId: { studentId: req.user!.id, classroomId } },

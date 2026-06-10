@@ -1,8 +1,14 @@
 import { Router } from 'express'
 import { authenticate, requireRole } from '../middleware/auth.js'
 import {
-  createClassroom, updateClassroom, getMyClassrooms, getClassroom, joinClassroom,
-  createStudent, updateStudent, removeStudent,
+  createClassroom,
+  updateClassroom,
+  getMyClassrooms,
+  getClassroom,
+  joinClassroom,
+  createStudent,
+  updateStudent,
+  removeStudent,
 } from '../controllers/classroom.controller.js'
 import { getLeaderboard } from '../controllers/leaderboard.controller.js'
 import { getSeating, saveSeating } from '../controllers/seating.controller.js'

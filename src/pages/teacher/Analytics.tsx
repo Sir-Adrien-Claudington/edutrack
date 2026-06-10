@@ -5,12 +5,20 @@ import api from '../../api/client'
 import { getToken } from '../../api/token'
 
 interface StudentStat {
-  studentId: string; studentName: string; averageScore: number | null
-  submissionCount: number; trend: string; weakTags: string[]; atRisk: boolean
+  studentId: string
+  studentName: string
+  averageScore: number | null
+  submissionCount: number
+  trend: string
+  weakTags: string[]
+  atRisk: boolean
 }
 interface AnalyticsData {
-  studentStats: StudentStat[]; overallAverage: number | null
-  totalStudents: number; atRiskCount: number; assignmentCount: number
+  studentStats: StudentStat[]
+  overallAverage: number | null
+  totalStudents: number
+  atRiskCount: number
+  assignmentCount: number
 }
 
 export default function Analytics({ classroomId: propId }: { classroomId?: string }) {
@@ -22,7 +30,7 @@ export default function Analytics({ classroomId: propId }: { classroomId?: strin
   const [insightError, setInsightError] = useState<string | null>(null)
 
   useEffect(() => {
-    if (classroomId) api.get(`/analytics/classroom/${classroomId}`).then(r => setData(r.data))
+    if (classroomId) api.get(`/analytics/classroom/${classroomId}`).then((r) => setData(r.data))
   }, [classroomId])
 
   async function loadInsight() {
@@ -32,7 +40,10 @@ export default function Analytics({ classroomId: propId }: { classroomId?: strin
       const r = await api.get(`/analytics/classroom/${classroomId}/insight`)
       setInsight(r.data.insight)
     } catch (err: any) {
-      const msg = err?.response?.data?.error ?? err?.message ?? 'Failed to generate insight. Please try again.'
+      const msg =
+        err?.response?.data?.error ??
+        err?.message ??
+        'Failed to generate insight. Please try again.'
       setInsightError(msg)
     } finally {
       setLoadingInsight(false)
@@ -58,13 +69,16 @@ export default function Analytics({ classroomId: propId }: { classroomId?: strin
   if (!data) return <div className="py-16 text-center text-gray-400">Loading analytics…</div>
 
   const chartData = data.studentStats
-    .filter(s => s.averageScore !== null)
-    .map(s => ({ name: s.studentName.split(' ')[0], score: s.averageScore }))
+    .filter((s) => s.averageScore !== null)
+    .map((s) => ({ name: s.studentName.split(' ')[0], score: s.averageScore }))
 
   return (
     <div className="space-y-6">
       <div className="flex justify-end mb-2">
-        <button onClick={exportCSV} className="text-sm border border-gray-300 px-3 py-1.5 rounded-lg text-gray-600 hover:bg-gray-50 flex items-center gap-1">
+        <button
+          onClick={exportCSV}
+          className="text-sm border border-gray-300 px-3 py-1.5 rounded-lg text-gray-600 hover:bg-gray-50 flex items-center gap-1"
+        >
           ↓ Export CSV
         </button>
       </div>
@@ -75,10 +89,17 @@ export default function Analytics({ classroomId: propId }: { classroomId?: strin
           { label: 'Assignments', value: data.assignmentCount },
           { label: 'Class average', value: data.overallAverage ? `${data.overallAverage}%` : '—' },
           { label: 'At risk', value: data.atRiskCount, alert: data.atRiskCount > 0 },
-        ].map(card => (
-          <div key={card.label} className={`bg-white border rounded-xl p-4 ${card.alert ? 'border-orange-300 bg-orange-50' : 'border-gray-200'}`}>
+        ].map((card) => (
+          <div
+            key={card.label}
+            className={`bg-white border rounded-xl p-4 ${card.alert ? 'border-orange-300 bg-orange-50' : 'border-gray-200'}`}
+          >
             <p className="text-sm text-gray-500">{card.label}</p>
-            <p className={`text-2xl font-bold mt-1 ${card.alert ? 'text-orange-600' : 'text-gray-900'}`}>{card.value}</p>
+            <p
+              className={`text-2xl font-bold mt-1 ${card.alert ? 'text-orange-600' : 'text-gray-900'}`}
+            >
+              {card.value}
+            </p>
           </div>
         ))}
       </div>
@@ -101,38 +122,52 @@ export default function Analytics({ classroomId: propId }: { classroomId?: strin
       <div className="bg-white border border-gray-200 rounded-xl p-5">
         <div className="flex items-center justify-between mb-4">
           <h3 className="font-semibold text-gray-900">AI Class Insight</h3>
-          <button onClick={loadInsight} disabled={loadingInsight}
-            className="btn-3d-indigo px-3 py-1.5 disabled:opacity-50">
+          <button
+            onClick={loadInsight}
+            disabled={loadingInsight}
+            className="btn-3d-indigo px-3 py-1.5 disabled:opacity-50"
+          >
             {loadingInsight ? 'Generating…' : 'Generate insight'}
           </button>
         </div>
         {insightError ? (
           <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-            <span className="text-xs font-semibold text-red-700 uppercase tracking-wide bg-red-100 px-2 py-0.5 rounded">Error</span>
+            <span className="text-xs font-semibold text-red-700 uppercase tracking-wide bg-red-100 px-2 py-0.5 rounded">
+              Error
+            </span>
             <p className="text-sm text-red-800 leading-relaxed mt-2">{insightError}</p>
           </div>
         ) : insight ? (
           <div className="bg-indigo-50 border border-indigo-200 rounded-lg p-4">
-            <span className="text-xs font-semibold text-indigo-700 uppercase tracking-wide bg-indigo-100 px-2 py-0.5 rounded">AI Insight</span>
+            <span className="text-xs font-semibold text-indigo-700 uppercase tracking-wide bg-indigo-100 px-2 py-0.5 rounded">
+              AI Insight
+            </span>
             <p className="text-sm text-indigo-900 leading-relaxed mt-2">{insight}</p>
           </div>
         ) : (
-          <p className="text-sm text-gray-400">Click "Generate insight" to get an AI summary of your class performance.</p>
+          <p className="text-sm text-gray-400">
+            Click "Generate insight" to get an AI summary of your class performance.
+          </p>
         )}
       </div>
 
       <div className="bg-white border border-gray-200 rounded-xl p-5">
         <h3 className="font-semibold text-gray-900 mb-3">Student breakdown</h3>
         <div className="space-y-2">
-          {data.studentStats.map(s => (
-            <div key={s.studentId} className={`flex items-center justify-between px-4 py-3 rounded-lg border ${s.atRisk ? 'border-orange-200 bg-orange-50' : 'border-gray-100 bg-gray-50'}`}>
+          {data.studentStats.map((s) => (
+            <div
+              key={s.studentId}
+              className={`flex items-center justify-between px-4 py-3 rounded-lg border ${s.atRisk ? 'border-orange-200 bg-orange-50' : 'border-gray-100 bg-gray-50'}`}
+            >
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-700 font-medium text-sm">
                   {s.studentName[0]}
                 </div>
                 <div>
                   <p className="text-sm font-medium text-gray-900">{s.studentName}</p>
-                  <p className="text-xs text-gray-400">{s.submissionCount} submission{s.submissionCount !== 1 ? 's' : ''}</p>
+                  <p className="text-xs text-gray-400">
+                    {s.submissionCount} submission{s.submissionCount !== 1 ? 's' : ''}
+                  </p>
                 </div>
               </div>
               <div className="flex items-center gap-4 text-sm">

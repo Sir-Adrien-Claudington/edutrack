@@ -23,12 +23,12 @@ export async function checkPlagiarism(submissionId: string) {
     if (!submission) return
 
     // Only run on assignments that have at least one long-answer question
-    const hasLongAnswer = submission.assignment.questions.some(q => q.type === 'LONG_ANSWER')
+    const hasLongAnswer = submission.assignment.questions.some((q) => q.type === 'LONG_ANSWER')
     if (!hasLongAnswer) return
 
     const newLongAnswers = submission.answers
-      .filter(a => a.question.type === 'LONG_ANSWER' && a.responseText)
-      .map(a => a.responseText!)
+      .filter((a) => a.question.type === 'LONG_ANSWER' && a.responseText)
+      .map((a) => a.responseText!)
     if (newLongAnswers.length === 0) return
 
     // Fetch all other submissions for this assignment
@@ -43,13 +43,13 @@ export async function checkPlagiarism(submissionId: string) {
     if (otherSubmissions.length === 0) return
 
     const otherTexts = otherSubmissions
-      .map(s => {
+      .map((s) => {
         const longAnswers = s.answers
-          .filter(a => a.question.type === 'LONG_ANSWER' && a.responseText)
-          .map(a => a.responseText!)
+          .filter((a) => a.question.type === 'LONG_ANSWER' && a.responseText)
+          .map((a) => a.responseText!)
         return { studentName: s.student.name, studentId: s.studentId, text: longAnswers.join('\n') }
       })
-      .filter(s => s.text.length > 0)
+      .filter((s) => s.text.length > 0)
 
     if (otherTexts.length === 0) return
 
@@ -72,7 +72,11 @@ Respond with ONLY valid JSON in this exact format:
     })
 
     const responseText = (message.content[0] as { type: string; text: string }).text
-    const result = JSON.parse(responseText) as { flagged: boolean; reason: string; similarTo: string[] }
+    const result = JSON.parse(responseText) as {
+      flagged: boolean
+      reason: string
+      similarTo: string[]
+    }
 
     if (result.flagged) {
       await prisma.submission.update({
@@ -85,7 +89,7 @@ Respond with ONLY valid JSON in this exact format:
         teacherId,
         'PLAGIARISM',
         'Possible plagiarism detected',
-        `Possible plagiarism detected on "${submission.assignment.title}" — ${submission.student.name}`,
+        `Possible plagiarism detected on "${submission.assignment.title}" — ${submission.student.name}`
       )
     }
   } catch (err) {

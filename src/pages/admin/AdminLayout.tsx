@@ -10,12 +10,12 @@ interface NavItem {
 }
 
 const nav: NavItem[] = [
-  { to: '/admin/users',      label: 'Users',      icon: '👥', live: true },
+  { to: '/admin/users', label: 'Users', icon: '👥', live: true },
   { to: '/admin/classrooms', label: 'Classrooms', icon: '🏫', live: true },
-  { to: '/admin/content',    label: 'Content',    icon: '📋', live: true },
-  { to: '/admin/analytics',  label: 'Analytics',  icon: '📊', live: true },
-  { to: '/admin/settings',   label: 'Settings',   icon: '⚙️',  live: true },
-  { to: '/admin/security',   label: 'Security',   icon: '🔒', live: true },
+  { to: '/admin/content', label: 'Content', icon: '📋', live: true },
+  { to: '/admin/analytics', label: 'Analytics', icon: '📊', live: true },
+  { to: '/admin/settings', label: 'Settings', icon: '⚙️', live: true },
+  { to: '/admin/security', label: 'Security', icon: '🔒', live: true },
 ]
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -35,11 +35,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           <span className="text-xl">🔭</span>
           <span className="font-bold text-gray-900 dark:text-white text-sm">EduTrack</span>
         </div>
-        <span className="mt-1 inline-block text-xs font-semibold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 px-2 py-0.5 rounded-full">Admin</span>
+        <span className="mt-1 inline-block text-xs font-semibold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 px-2 py-0.5 rounded-full">
+          Admin
+        </span>
       </div>
 
       <nav className="flex-1 px-3 py-4 space-y-0.5">
-        {nav.map(item => (
+        {nav.map((item) =>
           item.live ? (
             <NavLink
               key={item.to}
@@ -66,7 +68,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               <span className="ml-auto text-xs text-gray-300 dark:text-gray-600">Soon</span>
             </div>
           )
-        ))}
+        )}
       </nav>
 
       <div className="px-4 py-4 border-t border-gray-200 dark:border-gray-700">
@@ -93,10 +95,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       {sidebarOpen && (
         <div className="md:hidden fixed inset-0 z-40 flex">
           {/* Backdrop */}
-          <div
-            className="fixed inset-0 bg-black/40"
-            onClick={() => setSidebarOpen(false)}
-          />
+          <div className="fixed inset-0 bg-black/40" onClick={() => setSidebarOpen(false)} />
           {/* Drawer */}
           <aside className="relative z-50 w-64 bg-white dark:bg-gray-800 flex flex-col shadow-xl">
             {sidebarContent}
@@ -113,20 +112,27 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             className="p-1.5 rounded-lg text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700"
             aria-label="Open menu"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} className="w-5 h-5">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth={2}
+              className="w-5 h-5"
+            >
               <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
             </svg>
           </button>
           <div className="flex items-center gap-2">
             <span className="text-lg">🔭</span>
             <span className="font-bold text-gray-900 dark:text-white text-sm">EduTrack</span>
-            <span className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 px-2 py-0.5 rounded-full">Admin</span>
+            <span className="text-xs font-semibold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 px-2 py-0.5 rounded-full">
+              Admin
+            </span>
           </div>
         </div>
 
-        <main className="flex-1 overflow-auto">
-          {children}
-        </main>
+        <main className="flex-1 overflow-auto">{children}</main>
       </div>
     </div>
   )

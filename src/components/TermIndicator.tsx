@@ -12,16 +12,21 @@ function weekNumber(startDate: string): number {
 }
 
 function withinTerm(term: { startDate: string; endDate: string }): boolean {
-  const today = new Date(); today.setHours(0, 0, 0, 0)
-  const start = new Date(term.startDate); start.setHours(0, 0, 0, 0)
-  const end = new Date(term.endDate); end.setHours(23, 59, 59, 999)
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  const start = new Date(term.startDate)
+  start.setHours(0, 0, 0, 0)
+  const end = new Date(term.endDate)
+  end.setHours(23, 59, 59, 999)
   return today >= start && today <= end
 }
 
 export default function TermIndicator() {
   const { activeTerm, loaded, load, lastAutoSwitchMessage, clearMessage } = useTermStore()
 
-  useEffect(() => { if (!loaded) load() }, [loaded])
+  useEffect(() => {
+    if (!loaded) load()
+  }, [loaded])
 
   useEffect(() => {
     if (lastAutoSwitchMessage) {
@@ -34,7 +39,10 @@ export default function TermIndicator() {
 
   if (!activeTerm) {
     return (
-      <Link to="/teacher/settings" className="text-xs text-gray-400 hover:text-indigo-500 border border-dashed border-gray-300 dark:border-gray-600 rounded-lg px-2 py-1">
+      <Link
+        to="/teacher/settings"
+        className="text-xs text-gray-400 hover:text-indigo-500 border border-dashed border-gray-300 dark:border-gray-600 rounded-lg px-2 py-1"
+      >
         No Term Set
       </Link>
     )

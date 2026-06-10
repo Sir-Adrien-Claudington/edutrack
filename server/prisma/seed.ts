@@ -31,48 +31,131 @@ async function main() {
 
   // Admin (dev account)
   await prisma.user.create({
-    data: { email: 'admin@edutrack.demo', passwordHash: await hash('admin1234'), name: 'Admin', role: 'ADMIN' },
+    data: {
+      email: 'admin@edutrack.demo',
+      passwordHash: await hash('admin1234'),
+      name: 'Admin',
+      role: 'ADMIN',
+    },
   })
 
   // Teacher
   const teacher = await prisma.user.create({
-    data: { email: 'teacher@edutrack.demo', passwordHash: await hash('demo1234'), name: 'Sarah Mitchell', role: 'TEACHER' },
+    data: {
+      email: 'teacher@edutrack.demo',
+      passwordHash: await hash('demo1234'),
+      name: 'Sarah Mitchell',
+      role: 'TEACHER',
+    },
   })
 
   // Understanding levels
   const [lvlGreen, lvlYellow, lvlRed, lvlGrey] = await Promise.all([
-    prisma.understandingLevel.create({ data: { teacherId: teacher.id, label: 'Very Good',     colour: '#4ade80', order: 0, isAbsent: false, category: 'EXCEEDING' } }),
-    prisma.understandingLevel.create({ data: { teacherId: teacher.id, label: 'Understood',    colour: '#facc15', order: 1, isAbsent: false, category: 'MEETING'   } }),
-    prisma.understandingLevel.create({ data: { teacherId: teacher.id, label: 'Needs Support', colour: '#f87171', order: 2, isAbsent: false, category: 'SUPPORT'   } }),
-    prisma.understandingLevel.create({ data: { teacherId: teacher.id, label: 'Missed Lesson', colour: '#d1d5db', order: 3, isAbsent: true,  category: 'ABSENT'    } }),
+    prisma.understandingLevel.create({
+      data: {
+        teacherId: teacher.id,
+        label: 'Very Good',
+        colour: '#4ade80',
+        order: 0,
+        isAbsent: false,
+        category: 'EXCEEDING',
+      },
+    }),
+    prisma.understandingLevel.create({
+      data: {
+        teacherId: teacher.id,
+        label: 'Understood',
+        colour: '#facc15',
+        order: 1,
+        isAbsent: false,
+        category: 'MEETING',
+      },
+    }),
+    prisma.understandingLevel.create({
+      data: {
+        teacherId: teacher.id,
+        label: 'Needs Support',
+        colour: '#f87171',
+        order: 2,
+        isAbsent: false,
+        category: 'SUPPORT',
+      },
+    }),
+    prisma.understandingLevel.create({
+      data: {
+        teacherId: teacher.id,
+        label: 'Missed Lesson',
+        colour: '#d1d5db',
+        order: 3,
+        isAbsent: true,
+        category: 'ABSENT',
+      },
+    }),
   ])
   const levelMap: Record<string, string> = {
-    GREEN:  lvlGreen.id,
+    GREEN: lvlGreen.id,
     YELLOW: lvlYellow.id,
-    RED:    lvlRed.id,
-    GREY:   lvlGrey.id,
+    RED: lvlRed.id,
+    GREY: lvlGrey.id,
   }
 
   // Students
   const [alice, bob, charlie] = await Promise.all([
-    prisma.user.create({ data: { email: 'alice@edutrack.demo', passwordHash: await hash('demo1234'), name: 'Alice Johnson', role: 'STUDENT' } }),
-    prisma.user.create({ data: { email: 'bob@edutrack.demo', passwordHash: await hash('demo1234'), name: 'Bob Chen', role: 'STUDENT' } }),
-    prisma.user.create({ data: { email: 'charlie@edutrack.demo', passwordHash: await hash('demo1234'), name: 'Charlie Rivera', role: 'STUDENT' } }),
+    prisma.user.create({
+      data: {
+        email: 'alice@edutrack.demo',
+        passwordHash: await hash('demo1234'),
+        name: 'Alice Johnson',
+        role: 'STUDENT',
+      },
+    }),
+    prisma.user.create({
+      data: {
+        email: 'bob@edutrack.demo',
+        passwordHash: await hash('demo1234'),
+        name: 'Bob Chen',
+        role: 'STUDENT',
+      },
+    }),
+    prisma.user.create({
+      data: {
+        email: 'charlie@edutrack.demo',
+        passwordHash: await hash('demo1234'),
+        name: 'Charlie Rivera',
+        role: 'STUDENT',
+      },
+    }),
   ])
   const students = [alice, bob, charlie]
 
   // Terms
   const now = new Date()
-  const termStart = new Date(now); termStart.setDate(now.getDate() - 20)
-  const termEnd = new Date(now); termEnd.setDate(now.getDate() + 50)
-  const term2Start = new Date(now); term2Start.setDate(now.getDate() + 60)
-  const term2End = new Date(now); term2End.setDate(now.getDate() + 130)
+  const termStart = new Date(now)
+  termStart.setDate(now.getDate() - 20)
+  const termEnd = new Date(now)
+  termEnd.setDate(now.getDate() + 50)
+  const term2Start = new Date(now)
+  term2Start.setDate(now.getDate() + 60)
+  const term2End = new Date(now)
+  term2End.setDate(now.getDate() + 130)
 
   const activeTerm = await prisma.term.create({
-    data: { teacherId: teacher.id, name: 'Term 2 2026', startDate: termStart, endDate: termEnd, isActive: true },
+    data: {
+      teacherId: teacher.id,
+      name: 'Term 2 2026',
+      startDate: termStart,
+      endDate: termEnd,
+      isActive: true,
+    },
   })
   await prisma.term.create({
-    data: { teacherId: teacher.id, name: 'Term 3 2026', startDate: term2Start, endDate: term2End, isActive: false },
+    data: {
+      teacherId: teacher.id,
+      name: 'Term 3 2026',
+      startDate: term2Start,
+      endDate: term2End,
+      isActive: false,
+    },
   })
 
   // ── BIOLOGY CLASSROOM ──────────────────────────────────────────────
@@ -80,7 +163,7 @@ async function main() {
     data: { name: 'Year 10 Biology', teacherId: teacher.id, classCode: 'BIO101' },
   })
   await prisma.enrollment.createMany({
-    data: students.map(s => ({ studentId: s.id, classroomId: bioClass.id })),
+    data: students.map((s) => ({ studentId: s.id, classroomId: bioClass.id })),
   })
 
   // Biology quiz
@@ -95,10 +178,36 @@ async function main() {
       dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
       questions: {
         create: [
-          { text: 'What is the powerhouse of the cell?', type: 'MULTIPLE_CHOICE', options: ['Nucleus', 'Mitochondria', 'Ribosome', 'Golgi apparatus'], correctAnswer: 'Mitochondria', tags: ['cell-organelles'], points: 10 },
-          { text: 'DNA replication occurs in the nucleus.', type: 'TRUE_FALSE', correctAnswer: 'True', tags: ['dna', 'nucleus'], points: 10 },
-          { text: 'Which process converts glucose into ATP?', type: 'MULTIPLE_CHOICE', options: ['Photosynthesis', 'Osmosis', 'Cellular respiration', 'Fermentation'], correctAnswer: 'Cellular respiration', tags: ['cellular-respiration', 'atp'], points: 10 },
-          { text: 'Cell walls are found in animal cells.', type: 'TRUE_FALSE', correctAnswer: 'False', tags: ['cell-structure'], points: 10 },
+          {
+            text: 'What is the powerhouse of the cell?',
+            type: 'MULTIPLE_CHOICE',
+            options: ['Nucleus', 'Mitochondria', 'Ribosome', 'Golgi apparatus'],
+            correctAnswer: 'Mitochondria',
+            tags: ['cell-organelles'],
+            points: 10,
+          },
+          {
+            text: 'DNA replication occurs in the nucleus.',
+            type: 'TRUE_FALSE',
+            correctAnswer: 'True',
+            tags: ['dna', 'nucleus'],
+            points: 10,
+          },
+          {
+            text: 'Which process converts glucose into ATP?',
+            type: 'MULTIPLE_CHOICE',
+            options: ['Photosynthesis', 'Osmosis', 'Cellular respiration', 'Fermentation'],
+            correctAnswer: 'Cellular respiration',
+            tags: ['cellular-respiration', 'atp'],
+            points: 10,
+          },
+          {
+            text: 'Cell walls are found in animal cells.',
+            type: 'TRUE_FALSE',
+            correctAnswer: 'False',
+            tags: ['cell-structure'],
+            points: 10,
+          },
         ],
       },
     },
@@ -116,8 +225,18 @@ async function main() {
       dueDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000),
       questions: {
         create: [
-          { text: 'Explain the light-dependent reactions.', type: 'LONG_ANSWER', tags: ['photosynthesis'], points: 50 },
-          { text: 'Explain the Calvin cycle.', type: 'LONG_ANSWER', tags: ['photosynthesis'], points: 50 },
+          {
+            text: 'Explain the light-dependent reactions.',
+            type: 'LONG_ANSWER',
+            tags: ['photosynthesis'],
+            points: 50,
+          },
+          {
+            text: 'Explain the Calvin cycle.',
+            type: 'LONG_ANSWER',
+            tags: ['photosynthesis'],
+            points: 50,
+          },
         ],
       },
     },
@@ -131,10 +250,30 @@ async function main() {
       status: 'GRADED',
       answers: {
         create: [
-          { questionId: quiz.questions[0].id, responseText: 'Mitochondria', isCorrect: true, pointsAwarded: 10 },
-          { questionId: quiz.questions[1].id, responseText: 'True', isCorrect: true, pointsAwarded: 10 },
-          { questionId: quiz.questions[2].id, responseText: 'Photosynthesis', isCorrect: false, pointsAwarded: 0 },
-          { questionId: quiz.questions[3].id, responseText: 'False', isCorrect: true, pointsAwarded: 10 },
+          {
+            questionId: quiz.questions[0].id,
+            responseText: 'Mitochondria',
+            isCorrect: true,
+            pointsAwarded: 10,
+          },
+          {
+            questionId: quiz.questions[1].id,
+            responseText: 'True',
+            isCorrect: true,
+            pointsAwarded: 10,
+          },
+          {
+            questionId: quiz.questions[2].id,
+            responseText: 'Photosynthesis',
+            isCorrect: false,
+            pointsAwarded: 0,
+          },
+          {
+            questionId: quiz.questions[3].id,
+            responseText: 'False',
+            isCorrect: true,
+            pointsAwarded: 10,
+          },
         ],
       },
     },
@@ -142,8 +281,10 @@ async function main() {
   await prisma.feedback.create({
     data: {
       submissionId: aliceSub.id,
-      teacherNote: 'Good work Alice! Review the difference between photosynthesis and cellular respiration.',
-      aiSuggestion: 'Great effort! Focus on distinguishing photosynthesis from cellular respiration.',
+      teacherNote:
+        'Good work Alice! Review the difference between photosynthesis and cellular respiration.',
+      aiSuggestion:
+        'Great effort! Focus on distinguishing photosynthesis from cellular respiration.',
     },
   })
 
@@ -159,9 +300,9 @@ async function main() {
   const bioUnits = ['Cell Biology', 'Photosynthesis', 'Genetics']
   // levels[student][lesson] for 3 students × 4 lessons each = 12 entries per unit
   const bioLevels = [
-    ['GREEN', 'GREEN', 'YELLOW', 'RED'],    // alice
-    ['GREEN', 'YELLOW', 'GREEN', 'GREEN'],  // bob
-    ['YELLOW', 'RED', 'GREEN', 'GREEN'],    // charlie
+    ['GREEN', 'GREEN', 'YELLOW', 'RED'], // alice
+    ['GREEN', 'YELLOW', 'GREEN', 'GREEN'], // bob
+    ['YELLOW', 'RED', 'GREEN', 'GREEN'], // charlie
   ] as const
 
   for (let ui = 0; ui < bioUnits.length; ui++) {
@@ -174,39 +315,62 @@ async function main() {
       `${bioUnits[ui]} — Deep Dive`,
       `${bioUnits[ui]} — Review`,
     ]
-    const lessons = await Promise.all(lessonTitles.map((title, li) => {
-      const d = new Date(termStart); d.setDate(termStart.getDate() + ui * 14 + li * 3)
-      return prisma.lesson.create({ data: { unitId: unit.id, title, date: d, order: li + 1 } })
-    }))
+    const lessons = await Promise.all(
+      lessonTitles.map((title, li) => {
+        const d = new Date(termStart)
+        d.setDate(termStart.getDate() + ui * 14 + li * 3)
+        return prisma.lesson.create({ data: { unitId: unit.id, title, date: d, order: li + 1 } })
+      })
+    )
     for (let si = 0; si < students.length; si++) {
       for (let li = 0; li < lessons.length; li++) {
         await prisma.lessonUnderstanding.create({
-          data: { lessonId: lessons[li].id, studentId: students[si].id, understandingLevelId: levelMap[bioLevels[si][li]] },
+          data: {
+            lessonId: lessons[li].id,
+            studentId: students[si].id,
+            understandingLevelId: levelMap[bioLevels[si][li]],
+          },
         })
       }
       await prisma.unitAssessment.create({
-        data: { unitId: unit.id, studentId: students[si].id, score: [78, 65, 82][si] - ui * 3, totalMarks: 100 },
+        data: {
+          unitId: unit.id,
+          studentId: students[si].id,
+          score: [78, 65, 82][si] - ui * 3,
+          totalMarks: 100,
+        },
       })
     }
   }
 
   // Biology external assignments
-  const bioExt = await Promise.all([
-    { title: 'Lab Report 1', daysAgo: 15, total: 50, weight: 20 },
-    { title: 'Worksheet — Cells', daysAgo: 8, total: 20, weight: 0 },
-    { title: 'Practical Exam', daysAgo: 2, total: 100, weight: 30 },
-  ].map(({ title, daysAgo, total, weight }) => {
-    const d = new Date(); d.setDate(d.getDate() - daysAgo)
-    return prisma.externalAssignment.create({
-      data: { classroomId: bioClass.id, title, date: d, totalMarks: total, weight },
+  const bioExt = await Promise.all(
+    [
+      { title: 'Lab Report 1', daysAgo: 15, total: 50, weight: 20 },
+      { title: 'Worksheet — Cells', daysAgo: 8, total: 20, weight: 0 },
+      { title: 'Practical Exam', daysAgo: 2, total: 100, weight: 30 },
+    ].map(({ title, daysAgo, total, weight }) => {
+      const d = new Date()
+      d.setDate(d.getDate() - daysAgo)
+      return prisma.externalAssignment.create({
+        data: { classroomId: bioClass.id, title, date: d, totalMarks: total, weight },
+      })
     })
-  }))
+  )
 
-  const bioRawScores = [[42, 16, 88], [35, 14, 71], [48, 18, 95]]
+  const bioRawScores = [
+    [42, 16, 88],
+    [35, 14, 71],
+    [48, 18, 95],
+  ]
   for (let si = 0; si < students.length; si++) {
     for (let ai = 0; ai < bioExt.length; ai++) {
       await prisma.externalGrade.create({
-        data: { externalAssignmentId: bioExt[ai].id, studentId: students[si].id, score: bioRawScores[si][ai] },
+        data: {
+          externalAssignmentId: bioExt[ai].id,
+          studentId: students[si].id,
+          score: bioRawScores[si][ai],
+        },
       })
     }
   }
@@ -216,38 +380,47 @@ async function main() {
     data: { name: 'Maths', teacherId: teacher.id, classCode: 'MATH01' },
   })
   await prisma.enrollment.createMany({
-    data: students.map(s => ({ studentId: s.id, classroomId: mathClass.id })),
+    data: students.map((s) => ({ studentId: s.id, classroomId: mathClass.id })),
   })
 
   // UNIT 1: Shapes
   const shapesUnit = await prisma.unit.create({
     data: { classroomId: mathClass.id, name: 'Shapes', order: 1, termId: activeTerm.id },
   })
-  const shapesLessons = await Promise.all([
-    '2D Shapes',
-    'Making 2D Shapes',
-    '3D Shapes',
-    'Making 3D Shapes',
-  ].map((title, li) => {
-    const d = new Date(termStart); d.setDate(termStart.getDate() + li * 3)
-    return prisma.lesson.create({ data: { unitId: shapesUnit.id, title, date: d, order: li + 1 } })
-  }))
+  const shapesLessons = await Promise.all(
+    ['2D Shapes', 'Making 2D Shapes', '3D Shapes', 'Making 3D Shapes'].map((title, li) => {
+      const d = new Date(termStart)
+      d.setDate(termStart.getDate() + li * 3)
+      return prisma.lesson.create({
+        data: { unitId: shapesUnit.id, title, date: d, order: li + 1 },
+      })
+    })
+  )
 
   // Lesson understanding spread: GREEN/YELLOW/RED/GREY all visible
   const shapesLevels = [
-    ['GREEN', 'GREEN', 'YELLOW', 'GREEN'],   // alice — good
-    ['YELLOW', 'GREEN', 'RED', 'YELLOW'],    // bob — mixed
-    ['RED', 'YELLOW', 'GREY', 'RED'],        // charlie — struggling, missed lesson 3
+    ['GREEN', 'GREEN', 'YELLOW', 'GREEN'], // alice — good
+    ['YELLOW', 'GREEN', 'RED', 'YELLOW'], // bob — mixed
+    ['RED', 'YELLOW', 'GREY', 'RED'], // charlie — struggling, missed lesson 3
   ] as const
 
   for (let si = 0; si < students.length; si++) {
     for (let li = 0; li < shapesLessons.length; li++) {
       await prisma.lessonUnderstanding.create({
-        data: { lessonId: shapesLessons[li].id, studentId: students[si].id, understandingLevelId: levelMap[shapesLevels[si][li]] },
+        data: {
+          lessonId: shapesLessons[li].id,
+          studentId: students[si].id,
+          understandingLevelId: levelMap[shapesLevels[si][li]],
+        },
       })
     }
     await prisma.unitAssessment.create({
-      data: { unitId: shapesUnit.id, studentId: students[si].id, score: [88, 61, 45][si], totalMarks: 100 },
+      data: {
+        unitId: shapesUnit.id,
+        studentId: students[si].id,
+        score: [88, 61, 45][si],
+        totalMarks: 100,
+      },
     })
   }
 
@@ -255,31 +428,45 @@ async function main() {
   const algebraUnit = await prisma.unit.create({
     data: { classroomId: mathClass.id, name: 'Algebra / Numbers', order: 2, termId: activeTerm.id },
   })
-  const algebraLessons = await Promise.all([
-    'Numbers up to 100',
-    'Addition up to 10',
-    'Addition up to 20',
-    'Subtraction in numbers 1–10',
-    'Subtraction in numbers 10–20',
-  ].map((title, li) => {
-    const d = new Date(termStart); d.setDate(termStart.getDate() + 14 + li * 3)
-    return prisma.lesson.create({ data: { unitId: algebraUnit.id, title, date: d, order: li + 1 } })
-  }))
+  const algebraLessons = await Promise.all(
+    [
+      'Numbers up to 100',
+      'Addition up to 10',
+      'Addition up to 20',
+      'Subtraction in numbers 1–10',
+      'Subtraction in numbers 10–20',
+    ].map((title, li) => {
+      const d = new Date(termStart)
+      d.setDate(termStart.getDate() + 14 + li * 3)
+      return prisma.lesson.create({
+        data: { unitId: algebraUnit.id, title, date: d, order: li + 1 },
+      })
+    })
+  )
 
   const algebraLevels = [
-    ['GREEN', 'GREEN', 'YELLOW', 'GREEN', 'GREY'],   // alice — missed last lesson
-    ['GREEN', 'YELLOW', 'GREY', 'YELLOW', 'RED'],    // bob — missed lesson 3
-    ['YELLOW', 'RED', 'RED', 'GREY', 'RED'],         // charlie — struggling
+    ['GREEN', 'GREEN', 'YELLOW', 'GREEN', 'GREY'], // alice — missed last lesson
+    ['GREEN', 'YELLOW', 'GREY', 'YELLOW', 'RED'], // bob — missed lesson 3
+    ['YELLOW', 'RED', 'RED', 'GREY', 'RED'], // charlie — struggling
   ] as const
 
   for (let si = 0; si < students.length; si++) {
     for (let li = 0; li < algebraLessons.length; li++) {
       await prisma.lessonUnderstanding.create({
-        data: { lessonId: algebraLessons[li].id, studentId: students[si].id, understandingLevelId: levelMap[algebraLevels[si][li]] },
+        data: {
+          lessonId: algebraLessons[li].id,
+          studentId: students[si].id,
+          understandingLevelId: levelMap[algebraLevels[si][li]],
+        },
       })
     }
     await prisma.unitAssessment.create({
-      data: { unitId: algebraUnit.id, studentId: students[si].id, score: [92, 58, 39][si], totalMarks: 100 },
+      data: {
+        unitId: algebraUnit.id,
+        studentId: students[si].id,
+        score: [92, 58, 39][si],
+        totalMarks: 100,
+      },
     })
   }
 
@@ -319,4 +506,9 @@ async function main() {
   console.log('\n  Classes: BIO101 (Year 10 Biology), MATH01 (Maths)\n')
 }
 
-main().catch(e => { console.error(e); process.exit(1) }).finally(() => prisma.$disconnect())
+main()
+  .catch((e) => {
+    console.error(e)
+    process.exit(1)
+  })
+  .finally(() => prisma.$disconnect())

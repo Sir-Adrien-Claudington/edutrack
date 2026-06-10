@@ -3,10 +3,16 @@ import StudentNav from '../../components/StudentNav'
 import api from '../../api/client'
 
 interface LeaderboardEntry {
-  studentId: string; name: string; points: number; rank: number; isCurrentUser: boolean
+  studentId: string
+  name: string
+  points: number
+  rank: number
+  isCurrentUser: boolean
 }
 interface Classroom {
-  id: string; name: string; classCode: string
+  id: string
+  name: string
+  classCode: string
 }
 
 const medals: Record<number, string> = { 1: '🥇', 2: '🥈', 3: '🥉' }
@@ -17,7 +23,7 @@ export default function StudentRankings() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    api.get('/classrooms').then(async r => {
+    api.get('/classrooms').then(async (r) => {
       setClassrooms(r.data)
       const results = await Promise.allSettled(
         r.data.map((c: Classroom) => api.get(`/classrooms/${c.id}/leaderboard`))
@@ -47,19 +53,24 @@ export default function StudentRankings() {
           </div>
         ) : (
           <div className="space-y-6">
-            {classrooms.map(c => {
+            {classrooms.map((c) => {
               const lb = leaderboards[c.id] ?? []
               return (
-                <div key={c.id} className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden">
+                <div
+                  key={c.id}
+                  className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden"
+                >
                   <div className="px-5 py-4 border-b border-gray-100 dark:border-gray-700">
                     <h2 className="font-semibold text-gray-900 dark:text-white">{c.name}</h2>
                     <p className="text-xs text-gray-400 font-mono mt-0.5">{c.classCode}</p>
                   </div>
                   {lb.length === 0 ? (
-                    <div className="px-5 py-6 text-sm text-gray-400">No rankings yet — submit assignments to earn points.</div>
+                    <div className="px-5 py-6 text-sm text-gray-400">
+                      No rankings yet — submit assignments to earn points.
+                    </div>
                   ) : (
                     <div className="divide-y divide-gray-100 dark:divide-gray-700">
-                      {lb.map(entry => (
+                      {lb.map((entry) => (
                         <div
                           key={entry.studentId}
                           className={`flex items-center justify-between px-5 py-3 ${entry.isCurrentUser ? 'bg-teal-50 dark:bg-teal-900/20' : ''}`}
@@ -68,12 +79,20 @@ export default function StudentRankings() {
                             <span className="w-7 text-center text-sm font-semibold text-gray-400">
                               {medals[entry.rank] ?? `#${entry.rank}`}
                             </span>
-                            <span className={`text-sm font-medium ${entry.isCurrentUser ? 'text-teal-700 dark:text-teal-300' : 'text-gray-700 dark:text-gray-300'}`}>
+                            <span
+                              className={`text-sm font-medium ${entry.isCurrentUser ? 'text-teal-700 dark:text-teal-300' : 'text-gray-700 dark:text-gray-300'}`}
+                            >
                               {entry.isCurrentUser ? 'You' : entry.name}
-                              {entry.isCurrentUser && <span className="ml-1.5 text-[10px] text-teal-500 font-semibold uppercase tracking-wide">You</span>}
+                              {entry.isCurrentUser && (
+                                <span className="ml-1.5 text-[10px] text-teal-500 font-semibold uppercase tracking-wide">
+                                  You
+                                </span>
+                              )}
                             </span>
                           </div>
-                          <span className="text-sm font-semibold text-gray-500 dark:text-gray-400 tabular-nums">{entry.points} pts</span>
+                          <span className="text-sm font-semibold text-gray-500 dark:text-gray-400 tabular-nums">
+                            {entry.points} pts
+                          </span>
                         </div>
                       ))}
                     </div>

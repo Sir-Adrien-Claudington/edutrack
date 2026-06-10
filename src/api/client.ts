@@ -8,20 +8,24 @@ const api = axios.create({
   withCredentials: true, // send HttpOnly refresh_token cookie on every request
 })
 
-api.interceptors.request.use(config => {
+api.interceptors.request.use((config) => {
   const token = getToken()
   if (token) config.headers.Authorization = `Bearer ${token}`
   return config
 })
 
 api.interceptors.response.use(
-  res => res,
-  async error => {
+  (res) => res,
+  async (error) => {
     if (error.response?.status === 401 && !error.config._retry) {
       error.config._retry = true
       try {
         // Cookie is sent automatically — no body needed
-        const { data } = await axios.post(`${API_BASE}/api/auth/refresh`, {}, { withCredentials: true })
+        const { data } = await axios.post(
+          `${API_BASE}/api/auth/refresh`,
+          {},
+          { withCredentials: true }
+        )
         setToken(data.access)
         error.config.headers.Authorization = `Bearer ${data.access}`
         return api.request(error.config)

@@ -29,7 +29,10 @@ export async function getLeaderboard(req: AuthRequest, res: Response) {
 
   // Verify access
   const classroom = await prisma.classroom.findUnique({ where: { id: classroomId } })
-  if (!classroom) { res.status(404).json({ error: 'Classroom not found' }); return }
+  if (!classroom) {
+    res.status(404).json({ error: 'Classroom not found' })
+    return
+  }
 
   const isTeacher = req.user!.role === 'TEACHER' && classroom.teacherId === req.user!.id
   const isAdmin = req.user!.role === 'ADMIN'
@@ -39,7 +42,10 @@ export async function getLeaderboard(req: AuthRequest, res: Response) {
     const enrollment = await prisma.enrollment.findUnique({
       where: { studentId_classroomId: { studentId: req.user!.id, classroomId } },
     })
-    if (!enrollment) { res.status(403).json({ error: 'Forbidden' }); return }
+    if (!enrollment) {
+      res.status(403).json({ error: 'Forbidden' })
+      return
+    }
   }
 
   // Get all enrolled students
@@ -66,7 +72,7 @@ export async function getLeaderboard(req: AuthRequest, res: Response) {
 
   // Build ranked list
   const ranked = enrollments
-    .map(e => ({
+    .map((e) => ({
       studentId: e.student.id,
       name: e.student.name,
       points: pointsMap[e.student.id] ?? 0,

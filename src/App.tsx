@@ -45,64 +45,305 @@ import Privacy from './pages/Privacy'
 import Terms from './pages/Terms'
 
 export default function App() {
-  const loadUser = useAuthStore(s => s.loadUser)
+  const loadUser = useAuthStore((s) => s.loadUser)
 
-  useEffect(() => { loadUser() }, [])
+  useEffect(() => {
+    loadUser()
+  }, [])
 
-  const Router = typeof window !== 'undefined' && (window as any).electron ? HashRouter : BrowserRouter
+  const Router =
+    typeof window !== 'undefined' && (window as any).electron ? HashRouter : BrowserRouter
 
   return (
     <ErrorBoundary>
-    <Router>
-      <div className="flex flex-col h-screen overflow-hidden">
-      <ElectronTitleBar />
-      <div className="flex-1 min-h-0 overflow-y-auto no-scrollbar">
-      <AnnouncementBanner />
-      <UpdateBanner />
-      <Routes>
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/privacy" element={<Privacy />} />
-        <Route path="/terms" element={<Terms />} />
-        <Route path="/teacher" element={<ProtectedRoute role="TEACHER"><TeacherDashboard /></ProtectedRoute>} />
-        <Route path="/teacher/classroom/:id" element={<ProtectedRoute role="TEACHER"><ClassroomDetail /></ProtectedRoute>} />
-        <Route path="/teacher/classroom/:id/new-assignment" element={<ProtectedRoute role="TEACHER"><NewAssignment /></ProtectedRoute>} />
-        <Route path="/teacher/classroom/:classroomId/assignment/:assignmentId" element={<ProtectedRoute role="TEACHER"><TeacherAssignmentDetail /></ProtectedRoute>} />
-        <Route path="/teacher/classroom/:id/analytics" element={<ProtectedRoute role="TEACHER"><AnalyticsPage /></ProtectedRoute>} />
-        <Route path="/teacher/grades" element={<ProtectedRoute role="TEACHER"><GradeTracker /></ProtectedRoute>} />
-        <Route path="/teacher/grades/:studentId" element={<ProtectedRoute role="TEACHER"><StudentGradeDetail /></ProtectedRoute>} />
-        <Route path="/teacher/settings" element={<ProtectedRoute role="TEACHER"><TeacherSettings /></ProtectedRoute>} />
-        <Route path="/teacher/students" element={<ProtectedRoute role="TEACHER"><TeacherStudents /></ProtectedRoute>} />
-        <Route path="/teacher/rubrics" element={<ProtectedRoute role="TEACHER"><Rubrics /></ProtectedRoute>} />
-        <Route path="/teacher/assignments" element={<ProtectedRoute role="TEACHER"><TeacherAllAssignments /></ProtectedRoute>} />
-        <Route path="/teacher/rankings" element={<ProtectedRoute role="TEACHER"><TeacherRankings /></ProtectedRoute>} />
-        <Route path="/teacher/templates" element={<ProtectedRoute role="TEACHER"><TeacherTemplates /></ProtectedRoute>} />
-        <Route path="/teacher/planner" element={<ProtectedRoute role="TEACHER"><TeacherLessonPlanner /></ProtectedRoute>} />
-        <Route path="/teacher/interventions" element={<ProtectedRoute role="TEACHER"><TeacherInterventions /></ProtectedRoute>} />
-        <Route path="/teacher/announcements" element={<ProtectedRoute role="TEACHER"><TeacherAnnouncements /></ProtectedRoute>} />
-        <Route path="/teacher/calendar" element={<ProtectedRoute role="TEACHER"><TeacherCalendar /></ProtectedRoute>} />
-        <Route path="/teacher/submission/:id" element={<ProtectedRoute role="TEACHER"><SubmissionDetail role="TEACHER" /></ProtectedRoute>} />
-        <Route path="/admin" element={<ProtectedRoute role="ADMIN"><AdminUsers /></ProtectedRoute>} />
-        <Route path="/admin/users" element={<ProtectedRoute role="ADMIN"><AdminUsers /></ProtectedRoute>} />
-        <Route path="/admin/classrooms" element={<ProtectedRoute role="ADMIN"><AdminClassrooms /></ProtectedRoute>} />
-        <Route path="/admin/content" element={<ProtectedRoute role="ADMIN"><AdminContent /></ProtectedRoute>} />
-        <Route path="/admin/analytics" element={<ProtectedRoute role="ADMIN"><AdminAnalytics /></ProtectedRoute>} />
-        <Route path="/admin/settings" element={<ProtectedRoute role="ADMIN"><AdminPlatformSettings /></ProtectedRoute>} />
-        <Route path="/admin/security" element={<ProtectedRoute role="ADMIN"><AdminSecurity /></ProtectedRoute>} />
-        <Route path="/student" element={<ProtectedRoute role="STUDENT"><StudentDashboard /></ProtectedRoute>} />
-        <Route path="/student/assignment/:id" element={<ProtectedRoute role="STUDENT"><TakeAssignment /></ProtectedRoute>} />
-        <Route path="/student/submission/:id" element={<ProtectedRoute role="STUDENT"><SubmissionDetail role="STUDENT" /></ProtectedRoute>} />
-        <Route path="/student/progress" element={<ProtectedRoute role="STUDENT"><StudentProgressPage /></ProtectedRoute>} />
-        <Route path="/student/rankings" element={<ProtectedRoute role="STUDENT"><StudentRankings /></ProtectedRoute>} />
-        <Route path="/student/assignments" element={<ProtectedRoute role="STUDENT"><StudentAssignments /></ProtectedRoute>} />
-        <Route path="/student/settings" element={<ProtectedRoute role="STUDENT"><StudentSettings /></ProtectedRoute>} />
-        <Route path="/student/calendar" element={<ProtectedRoute role="STUDENT"><StudentCalendar /></ProtectedRoute>} />
-        <Route path="/messages" element={<ProtectedRoute><MessagesPage /></ProtectedRoute>} />
-        <Route path="*" element={<Navigate to="/login" replace />} />
-      </Routes>
-      </div>
-      </div>
-    </Router>
+      <Router>
+        <div className="flex flex-col h-screen overflow-hidden">
+          <ElectronTitleBar />
+          <div className="flex-1 min-h-0 overflow-y-auto no-scrollbar">
+            <AnnouncementBanner />
+            <UpdateBanner />
+            <Routes>
+              <Route path="/login" element={<Login />} />
+              <Route path="/register" element={<Register />} />
+              <Route path="/privacy" element={<Privacy />} />
+              <Route path="/terms" element={<Terms />} />
+              <Route
+                path="/teacher"
+                element={
+                  <ProtectedRoute role="TEACHER">
+                    <TeacherDashboard />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/teacher/classroom/:id"
+                element={
+                  <ProtectedRoute role="TEACHER">
+                    <ClassroomDetail />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/teacher/classroom/:id/new-assignment"
+                element={
+                  <ProtectedRoute role="TEACHER">
+                    <NewAssignment />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/teacher/classroom/:classroomId/assignment/:assignmentId"
+                element={
+                  <ProtectedRoute role="TEACHER">
+                    <TeacherAssignmentDetail />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/teacher/classroom/:id/analytics"
+                element={
+                  <ProtectedRoute role="TEACHER">
+                    <AnalyticsPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/teacher/grades"
+                element={
+                  <ProtectedRoute role="TEACHER">
+                    <GradeTracker />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/teacher/grades/:studentId"
+                element={
+                  <ProtectedRoute role="TEACHER">
+                    <StudentGradeDetail />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/teacher/settings"
+                element={
+                  <ProtectedRoute role="TEACHER">
+                    <TeacherSettings />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/teacher/students"
+                element={
+                  <ProtectedRoute role="TEACHER">
+                    <TeacherStudents />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/teacher/rubrics"
+                element={
+                  <ProtectedRoute role="TEACHER">
+                    <Rubrics />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/teacher/assignments"
+                element={
+                  <ProtectedRoute role="TEACHER">
+                    <TeacherAllAssignments />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/teacher/rankings"
+                element={
+                  <ProtectedRoute role="TEACHER">
+                    <TeacherRankings />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/teacher/templates"
+                element={
+                  <ProtectedRoute role="TEACHER">
+                    <TeacherTemplates />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/teacher/planner"
+                element={
+                  <ProtectedRoute role="TEACHER">
+                    <TeacherLessonPlanner />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/teacher/interventions"
+                element={
+                  <ProtectedRoute role="TEACHER">
+                    <TeacherInterventions />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/teacher/announcements"
+                element={
+                  <ProtectedRoute role="TEACHER">
+                    <TeacherAnnouncements />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/teacher/calendar"
+                element={
+                  <ProtectedRoute role="TEACHER">
+                    <TeacherCalendar />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/teacher/submission/:id"
+                element={
+                  <ProtectedRoute role="TEACHER">
+                    <SubmissionDetail role="TEACHER" />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin"
+                element={
+                  <ProtectedRoute role="ADMIN">
+                    <AdminUsers />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/users"
+                element={
+                  <ProtectedRoute role="ADMIN">
+                    <AdminUsers />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/classrooms"
+                element={
+                  <ProtectedRoute role="ADMIN">
+                    <AdminClassrooms />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/content"
+                element={
+                  <ProtectedRoute role="ADMIN">
+                    <AdminContent />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/analytics"
+                element={
+                  <ProtectedRoute role="ADMIN">
+                    <AdminAnalytics />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/settings"
+                element={
+                  <ProtectedRoute role="ADMIN">
+                    <AdminPlatformSettings />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/security"
+                element={
+                  <ProtectedRoute role="ADMIN">
+                    <AdminSecurity />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/student"
+                element={
+                  <ProtectedRoute role="STUDENT">
+                    <StudentDashboard />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/student/assignment/:id"
+                element={
+                  <ProtectedRoute role="STUDENT">
+                    <TakeAssignment />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/student/submission/:id"
+                element={
+                  <ProtectedRoute role="STUDENT">
+                    <SubmissionDetail role="STUDENT" />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/student/progress"
+                element={
+                  <ProtectedRoute role="STUDENT">
+                    <StudentProgressPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/student/rankings"
+                element={
+                  <ProtectedRoute role="STUDENT">
+                    <StudentRankings />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/student/assignments"
+                element={
+                  <ProtectedRoute role="STUDENT">
+                    <StudentAssignments />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/student/settings"
+                element={
+                  <ProtectedRoute role="STUDENT">
+                    <StudentSettings />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/student/calendar"
+                element={
+                  <ProtectedRoute role="STUDENT">
+                    <StudentCalendar />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/messages"
+                element={
+                  <ProtectedRoute>
+                    <MessagesPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route path="*" element={<Navigate to="/login" replace />} />
+            </Routes>
+          </div>
+        </div>
+      </Router>
     </ErrorBoundary>
   )
 }
@@ -112,8 +353,10 @@ function AnalyticsPage() {
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-5xl mx-auto px-6 py-8">
         <div className="mb-6">
-          <Link to="/teacher"
-            className="inline-flex items-center gap-1 text-sm font-medium text-indigo-600 hover:text-indigo-700">
+          <Link
+            to="/teacher"
+            className="inline-flex items-center gap-1 text-sm font-medium text-indigo-600 hover:text-indigo-700"
+          >
             ← Dashboard
           </Link>
         </div>

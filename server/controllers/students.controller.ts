@@ -15,11 +15,16 @@ export async function getParentContacts(req: AuthRequest, res: Response) {
 export async function addParentContact(req: AuthRequest, res: Response) {
   const { studentId } = req.params
   const { type, summary, outcome, date } = req.body
-  if (!type || !summary) { res.status(400).json({ error: 'type and summary required' }); return }
+  if (!type || !summary) {
+    res.status(400).json({ error: 'type and summary required' })
+    return
+  }
   const contact = await prisma.parentContact.create({
     data: {
-      studentId, teacherId: req.user!.id,
-      type, summary,
+      studentId,
+      teacherId: req.user!.id,
+      type,
+      summary,
       outcome: outcome ?? null,
       date: date ? new Date(date) : new Date(),
     },
@@ -29,7 +34,10 @@ export async function addParentContact(req: AuthRequest, res: Response) {
 
 export async function deleteParentContact(req: AuthRequest, res: Response) {
   const contact = await prisma.parentContact.findUnique({ where: { id: req.params.contactId } })
-  if (!contact || contact.teacherId !== req.user!.id) { res.status(403).json({ error: 'Forbidden' }); return }
+  if (!contact || contact.teacherId !== req.user!.id) {
+    res.status(403).json({ error: 'Forbidden' })
+    return
+  }
   await prisma.parentContact.delete({ where: { id: req.params.contactId } })
   res.json({ ok: true })
 }
@@ -43,17 +51,22 @@ export async function getStudentTimeline(req: AuthRequest, res: Response) {
     where: { teacherId: req.user!.id },
     select: { id: true, name: true },
   })
-  const classroomIds = teacherClassrooms.map(c => c.id)
+  const classroomIds = teacherClassrooms.map((c) => c.id)
   const enrolled = await prisma.enrollment.findFirst({
     where: { studentId, classroomId: { in: classroomIds } },
   })
-  if (!enrolled && req.user!.role !== 'ADMIN') { res.status(403).json({ error: 'Forbidden' }); return }
+  if (!enrolled && req.user!.role !== 'ADMIN') {
+    res.status(403).json({ error: 'Forbidden' })
+    return
+  }
 
   const [submissions, comments] = await Promise.all([
     prisma.submission.findMany({
       where: { studentId, assignment: { classroomId: { in: classroomIds } } },
       include: {
-        assignment: { select: { title: true, classroomId: true, classroom: { select: { name: true } } } },
+        assignment: {
+          select: { title: true, classroomId: true, classroom: { select: { name: true } } },
+        },
         feedback: { select: { aiSuggestion: true, teacherNote: true } },
       },
       orderBy: { submittedAt: 'desc' },
@@ -84,7 +97,9 @@ export async function getStudentTimeline(req: AuthRequest, res: Response) {
       type: 'NOTE',
       date: c.updatedAt,
       title: 'Teacher note updated',
-      detail: [c.strengths && `Strengths: ${c.strengths}`, c.weaknesses && `Areas: ${c.weaknesses}`].filter(Boolean).join(' · '),
+      detail: [c.strengths && `Strengths: ${c.strengths}`, c.weaknesses && `Areas: ${c.weaknesses}`]
+        .filter(Boolean)
+        .join(' · '),
     })
   }
 
@@ -96,7 +111,10 @@ export async function getStudentTimeline(req: AuthRequest, res: Response) {
 export async function getClassroomEngagement(req: AuthRequest, res: Response) {
   const { classroomId } = req.params
   const classroom = await prisma.classroom.findUnique({ where: { id: classroomId } })
-  if (!classroom || classroom.teacherId !== req.user!.id) { res.status(403).json({ error: 'Forbidden' }); return }
+  if (!classroom || classroom.teacherId !== req.user!.id) {
+    res.status(403).json({ error: 'Forbidden' })
+    return
+  }
 
   const enrollments = await prisma.enrollment.findMany({
     where: { classroomId },
@@ -108,18 +126,32 @@ export async function getClassroomEngagement(req: AuthRequest, res: Response) {
   })
   const totalAssignments = assignments.length
 
-  const results = await Promise.all(enrollments.map(async e => {
-    const subs = await prisma.submission.findMany({
-      where: { studentId: e.studentId, assignment: { classroomId } },
-      select: { totalScore: true, status: true },
+  const results = await Promise.all(
+    enrollments.map(async (e) => {
+      const subs = await prisma.submission.findMany({
+        where: { studentId: e.studentId, assignment: { classroomId } },
+        select: { totalScore: true, status: true },
+      })
+      const submissionRate = totalAssignments > 0 ? subs.length / totalAssignments : 0
+      const gradedSubs = subs.filter((s) => s.status === 'GRADED' && s.totalScore !== null)
+      const avgScore =
+        gradedSubs.length > 0
+          ? gradedSubs.reduce((a, s) => a + (s.totalScore ?? 0), 0) / gradedSubs.length
+          : null
+      const score = Math.round(
+        submissionRate * 60 + (avgScore !== null ? (avgScore / 100) * 40 : 0)
+      )
+      const level = score >= 75 ? 'HIGH' : score >= 45 ? 'MEDIUM' : 'LOW'
+      return {
+        studentId: e.studentId,
+        name: e.student.name,
+        score,
+        level,
+        submissionRate: Math.round(submissionRate * 100),
+        avgScore,
+      }
     })
-    const submissionRate = totalAssignments > 0 ? subs.length / totalAssignments : 0
-    const gradedSubs = subs.filter(s => s.status === 'GRADED' && s.totalScore !== null)
-    const avgScore = gradedSubs.length > 0 ? gradedSubs.reduce((a, s) => a + (s.totalScore ?? 0), 0) / gradedSubs.length : null
-    const score = Math.round(submissionRate * 60 + (avgScore !== null ? (avgScore / 100) * 40 : 0))
-    const level = score >= 75 ? 'HIGH' : score >= 45 ? 'MEDIUM' : 'LOW'
-    return { studentId: e.studentId, name: e.student.name, score, level, submissionRate: Math.round(submissionRate * 100), avgScore }
-  }))
+  )
 
   res.json(results.sort((a, b) => b.score - a.score))
 }
@@ -128,7 +160,10 @@ export async function getClassroomEngagement(req: AuthRequest, res: Response) {
 export async function getAtRiskStudents(req: AuthRequest, res: Response) {
   const { classroomId } = req.params
   const classroom = await prisma.classroom.findUnique({ where: { id: classroomId } })
-  if (!classroom || classroom.teacherId !== req.user!.id) { res.status(403).json({ error: 'Forbidden' }); return }
+  if (!classroom || classroom.teacherId !== req.user!.id) {
+    res.status(403).json({ error: 'Forbidden' })
+    return
+  }
 
   const enrollments = await prisma.enrollment.findMany({
     where: { classroomId },
@@ -148,12 +183,16 @@ export async function getAtRiskStudents(req: AuthRequest, res: Response) {
       orderBy: { submittedAt: 'desc' },
     })
     const missing = totalAssignments - subs.length
-    const gradedSubs = subs.filter(s => s.status === 'GRADED' && s.totalScore !== null)
-    const avgScore = gradedSubs.length > 0 ? gradedSubs.reduce((a, s) => a + (s.totalScore ?? 0), 0) / gradedSubs.length : null
+    const gradedSubs = subs.filter((s) => s.status === 'GRADED' && s.totalScore !== null)
+    const avgScore =
+      gradedSubs.length > 0
+        ? gradedSubs.reduce((a, s) => a + (s.totalScore ?? 0), 0) / gradedSubs.length
+        : null
     const reasons: string[] = []
     if (missing >= 1) reasons.push(`${missing} missing assignment${missing > 1 ? 's' : ''}`)
     if (avgScore !== null && avgScore < 50) reasons.push(`Average score ${avgScore.toFixed(0)}%`)
-    if (reasons.length > 0) flagged.push({ studentId: e.studentId, name: e.student.name, reasons, avgScore, missing })
+    if (reasons.length > 0)
+      flagged.push({ studentId: e.studentId, name: e.student.name, reasons, avgScore, missing })
   }
   res.json(flagged)
 }
@@ -162,7 +201,10 @@ export async function getAtRiskStudents(req: AuthRequest, res: Response) {
 export async function getInterventions(req: AuthRequest, res: Response) {
   const { classroomId } = req.params
   const classroom = await prisma.classroom.findUnique({ where: { id: classroomId } })
-  if (!classroom || classroom.teacherId !== req.user!.id) { res.status(403).json({ error: 'Forbidden' }); return }
+  if (!classroom || classroom.teacherId !== req.user!.id) {
+    res.status(403).json({ error: 'Forbidden' })
+    return
+  }
   const interventions = await prisma.intervention.findMany({
     where: { classroomId },
     include: { student: { select: { id: true, name: true } } },
@@ -176,7 +218,7 @@ export async function getAllInterventions(req: AuthRequest, res: Response) {
     where: { teacherId: req.user!.id },
     select: { id: true },
   })
-  const classroomIds = classrooms.map(c => c.id)
+  const classroomIds = classrooms.map((c) => c.id)
   const interventions = await prisma.intervention.findMany({
     where: { classroomId: { in: classroomIds } },
     include: {
@@ -191,11 +233,20 @@ export async function getAllInterventions(req: AuthRequest, res: Response) {
 export async function upsertIntervention(req: AuthRequest, res: Response) {
   const { studentId, classroomId } = req.params
   const classroom = await prisma.classroom.findUnique({ where: { id: classroomId } })
-  if (!classroom || classroom.teacherId !== req.user!.id) { res.status(403).json({ error: 'Forbidden' }); return }
+  if (!classroom || classroom.teacherId !== req.user!.id) {
+    res.status(403).json({ error: 'Forbidden' })
+    return
+  }
   const { stage, notes } = req.body
   const intervention = await prisma.intervention.upsert({
     where: { studentId_classroomId: { studentId, classroomId } },
-    create: { studentId, classroomId, teacherId: req.user!.id, stage: stage ?? 'MONITORING', notes: notes ?? null },
+    create: {
+      studentId,
+      classroomId,
+      teacherId: req.user!.id,
+      stage: stage ?? 'MONITORING',
+      notes: notes ?? null,
+    },
     update: { ...(stage && { stage }), ...(notes !== undefined && { notes }) },
     include: { student: { select: { id: true, name: true } } },
   })
@@ -205,7 +256,10 @@ export async function upsertIntervention(req: AuthRequest, res: Response) {
 export async function deleteIntervention(req: AuthRequest, res: Response) {
   const { studentId, classroomId } = req.params
   const classroom = await prisma.classroom.findUnique({ where: { id: classroomId } })
-  if (!classroom || classroom.teacherId !== req.user!.id) { res.status(403).json({ error: 'Forbidden' }); return }
+  if (!classroom || classroom.teacherId !== req.user!.id) {
+    res.status(403).json({ error: 'Forbidden' })
+    return
+  }
   await prisma.intervention.deleteMany({ where: { studentId, classroomId } })
   res.json({ ok: true })
 }

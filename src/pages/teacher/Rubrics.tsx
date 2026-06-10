@@ -1,12 +1,6 @@
 import { useEffect, useState } from 'react'
 import TeacherNav from '../../components/TeacherNav'
-import {
-  DndContext,
-  type DragEndEvent,
-  PointerSensor,
-  useSensor,
-  useSensors,
-} from '@dnd-kit/core'
+import { DndContext, type DragEndEvent, PointerSensor, useSensor, useSensors } from '@dnd-kit/core'
 import {
   SortableContext,
   useSortable,
@@ -32,9 +26,13 @@ interface Rubric {
 }
 
 function SortableCriteriaRow({
-  item, index, onChange, onRemove,
+  item,
+  index,
+  onChange,
+  onRemove,
 }: {
-  item: Criteria; index: number
+  item: Criteria
+  index: number
   onChange: (field: keyof Criteria, value: any) => void
   onRemove: () => void
 }) {
@@ -58,19 +56,21 @@ function SortableCriteriaRow({
       </button>
       <input
         value={item.name}
-        onChange={e => onChange('name', e.target.value)}
+        onChange={(e) => onChange('name', e.target.value)}
         placeholder="Criterion name"
         className="flex-1 border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-1.5 text-sm bg-white dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
       />
       <input
         value={item.description}
-        onChange={e => onChange('description', e.target.value)}
+        onChange={(e) => onChange('description', e.target.value)}
         placeholder="Description (optional)"
         className="flex-[2] border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-1.5 text-sm bg-white dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
       />
       <input
-        type="number" min={0} value={item.maxPoints}
-        onChange={e => onChange('maxPoints', Number(e.target.value))}
+        type="number"
+        min={0}
+        value={item.maxPoints}
+        onChange={(e) => onChange('maxPoints', Number(e.target.value))}
         placeholder="pts"
         className="w-16 border border-gray-300 dark:border-gray-600 rounded-lg px-2 py-1.5 text-sm bg-white dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
       />
@@ -100,21 +100,28 @@ export default function Rubrics() {
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 5 } }))
 
   useEffect(() => {
-    api.get('/rubrics').then(r => { setRubrics(r.data); setLoading(false) })
+    api.get('/rubrics').then((r) => {
+      setRubrics(r.data)
+      setLoading(false)
+    })
   }, [])
 
   function openCreate() {
-    setEditId(null); setName(''); setCriteria([emptyCriteria()]); setShowForm(true)
+    setEditId(null)
+    setName('')
+    setCriteria([emptyCriteria()])
+    setShowForm(true)
   }
 
   function openEdit(r: Rubric) {
-    setEditId(r.id); setName(r.name)
-    setCriteria(r.criteria.length ? r.criteria.map(c => ({ ...c })) : [emptyCriteria()])
+    setEditId(r.id)
+    setName(r.name)
+    setCriteria(r.criteria.length ? r.criteria.map((c) => ({ ...c })) : [emptyCriteria()])
     setShowForm(true)
   }
 
   function updateCriteria(i: number, field: keyof Criteria, value: any) {
-    setCriteria(cs => cs.map((c, idx) => idx === i ? { ...c, [field]: value } : c))
+    setCriteria((cs) => cs.map((c, idx) => (idx === i ? { ...c, [field]: value } : c)))
   }
 
   function handleDragEnd(event: DragEndEvent) {
@@ -123,7 +130,7 @@ export default function Rubrics() {
     const oldIdx = criteria.findIndex((c, i) => (c.id ?? `new-${i}`) === active.id)
     const newIdx = criteria.findIndex((c, i) => (c.id ?? `new-${i}`) === over.id)
     if (oldIdx !== -1 && newIdx !== -1) {
-      setCriteria(prev => arrayMove(prev, oldIdx, newIdx))
+      setCriteria((prev) => arrayMove(prev, oldIdx, newIdx))
     }
   }
 
@@ -131,13 +138,13 @@ export default function Rubrics() {
     e.preventDefault()
     setSaving(true)
     try {
-      const payload = { name, criteria: criteria.filter(c => c.name.trim()) }
+      const payload = { name, criteria: criteria.filter((c) => c.name.trim()) }
       if (editId) {
         const { data } = await api.put(`/rubrics/${editId}`, payload)
-        setRubrics(rs => rs.map(r => r.id === editId ? data : r))
+        setRubrics((rs) => rs.map((r) => (r.id === editId ? data : r)))
       } else {
         const { data } = await api.post('/rubrics', payload)
-        setRubrics(rs => [data, ...rs])
+        setRubrics((rs) => [data, ...rs])
       }
       setShowForm(false)
     } finally {
@@ -148,7 +155,7 @@ export default function Rubrics() {
   async function handleDelete() {
     if (!deleteId) return
     await api.delete(`/rubrics/${deleteId}`)
-    setRubrics(rs => rs.filter(r => r.id !== deleteId))
+    setRubrics((rs) => rs.filter((r) => r.id !== deleteId))
     setDeleteId(null)
   }
 
@@ -160,9 +167,13 @@ export default function Rubrics() {
         <div className="flex items-center justify-between mb-6">
           <div>
             <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">My Rubrics</h1>
-            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Create reusable grading rubrics for assignments</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+              Create reusable grading rubrics for assignments
+            </p>
           </div>
-          <button onClick={openCreate} className="btn-3d-indigo">+ New Rubric</button>
+          <button onClick={openCreate} className="btn-3d-indigo">
+            + New Rubric
+          </button>
         </div>
 
         {loading ? (
@@ -176,11 +187,18 @@ export default function Rubrics() {
 
         {/* Create / Edit Form */}
         {showForm && (
-          <form onSubmit={handleSave} className="mb-6 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-5 space-y-4">
+          <form
+            onSubmit={handleSave}
+            className="mb-6 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-5 space-y-4"
+          >
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Rubric name</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Rubric name
+              </label>
               <input
-                value={name} onChange={e => setName(e.target.value)} required
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                required
                 placeholder="e.g. Essay Rubric"
                 className="w-full border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-gray-700 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
               />
@@ -188,10 +206,12 @@ export default function Rubrics() {
 
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">Criteria</label>
+                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Criteria
+                </label>
                 <button
                   type="button"
-                  onClick={() => setCriteria(cs => [...cs, emptyCriteria()])}
+                  onClick={() => setCriteria((cs) => [...cs, emptyCriteria()])}
                   className="text-xs text-indigo-600 dark:text-indigo-400 hover:text-indigo-800"
                 >
                   + Add criterion
@@ -215,7 +235,7 @@ export default function Rubrics() {
                         item={c}
                         index={i}
                         onChange={(field, value) => updateCriteria(i, field, value)}
-                        onRemove={() => setCriteria(cs => cs.filter((_, j) => j !== i))}
+                        onRemove={() => setCriteria((cs) => cs.filter((_, j) => j !== i))}
                       />
                     ))}
                   </div>
@@ -224,30 +244,55 @@ export default function Rubrics() {
             </div>
 
             <div className="flex gap-2 justify-end">
-              <button type="button" onClick={() => setShowForm(false)} className="px-4 py-2 text-sm text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700">Cancel</button>
-              <button type="submit" disabled={saving} className="btn-3d-indigo disabled:opacity-50">{saving ? 'Saving…' : editId ? 'Update' : 'Create'}</button>
+              <button
+                type="button"
+                onClick={() => setShowForm(false)}
+                className="px-4 py-2 text-sm text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700"
+              >
+                Cancel
+              </button>
+              <button type="submit" disabled={saving} className="btn-3d-indigo disabled:opacity-50">
+                {saving ? 'Saving…' : editId ? 'Update' : 'Create'}
+              </button>
             </div>
           </form>
         )}
 
         {/* Rubric list */}
         <div className="space-y-3">
-          {rubrics.map(r => (
-            <div key={r.id} className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4">
+          {rubrics.map((r) => (
+            <div
+              key={r.id}
+              className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4"
+            >
               <div className="flex items-center justify-between mb-2">
                 <h3 className="font-medium text-gray-900 dark:text-white">{r.name}</h3>
                 <div className="flex gap-2">
-                  <button onClick={() => openEdit(r)} className="text-xs text-indigo-600 dark:text-indigo-400 hover:underline">Edit</button>
-                  <button onClick={() => setDeleteId(r.id)} className="text-xs text-red-500 hover:underline">Delete</button>
+                  <button
+                    onClick={() => openEdit(r)}
+                    className="text-xs text-indigo-600 dark:text-indigo-400 hover:underline"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    onClick={() => setDeleteId(r.id)}
+                    className="text-xs text-red-500 hover:underline"
+                  >
+                    Delete
+                  </button>
                 </div>
               </div>
               {r.criteria.length > 0 ? (
                 <div className="space-y-1 mt-2">
-                  {r.criteria.map(c => (
+                  {r.criteria.map((c) => (
                     <div key={c.id} className="flex items-center gap-2 text-xs">
                       <span className="font-medium text-gray-700 dark:text-gray-300">{c.name}</span>
-                      {c.description && <span className="text-gray-400 dark:text-gray-500">— {c.description}</span>}
-                      <span className="ml-auto text-gray-500 dark:text-gray-400">{c.maxPoints} pts</span>
+                      {c.description && (
+                        <span className="text-gray-400 dark:text-gray-500">— {c.description}</span>
+                      )}
+                      <span className="ml-auto text-gray-500 dark:text-gray-400">
+                        {c.maxPoints} pts
+                      </span>
                     </div>
                   ))}
                   <div className="text-xs text-gray-400 dark:text-gray-500 mt-1 pt-1 border-t border-gray-100 dark:border-gray-700">
@@ -267,10 +312,22 @@ export default function Rubrics() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
           <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl w-full max-w-sm p-6">
             <h3 className="font-semibold text-gray-900 dark:text-white mb-2">Delete Rubric</h3>
-            <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">This rubric will be removed from any assignments it's attached to.</p>
+            <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+              This rubric will be removed from any assignments it's attached to.
+            </p>
             <div className="flex justify-end gap-2">
-              <button onClick={() => setDeleteId(null)} className="px-4 py-2 text-sm text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700">Cancel</button>
-              <button onClick={handleDelete} className="px-4 py-2 text-sm bg-red-600 text-white rounded-lg hover:bg-red-700">Delete</button>
+              <button
+                onClick={() => setDeleteId(null)}
+                className="px-4 py-2 text-sm text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDelete}
+                className="px-4 py-2 text-sm bg-red-600 text-white rounded-lg hover:bg-red-700"
+              >
+                Delete
+              </button>
             </div>
           </div>
         </div>

@@ -28,10 +28,10 @@ npm run electron:build:prod   # build Windows installer pointing to live Railway
 
 ## Deployments
 
-| Target | URL |
-|---|---|
-| Live web app | https://edutrack-production-2a6d.up.railway.app |
-| GitHub repo | https://github.com/Sir-Adrien-Claudington/edutrack (private) |
+| Target       | URL                                                          |
+| ------------ | ------------------------------------------------------------ |
+| Live web app | https://edutrack-production-2a6d.up.railway.app              |
+| GitHub repo  | https://github.com/Sir-Adrien-Claudington/edutrack (private) |
 
 Railway auto-deploys on every push to `master` (1–2 min lag).
 

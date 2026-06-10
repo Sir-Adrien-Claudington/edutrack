@@ -77,7 +77,12 @@ beforeEach(() => {
 describe('POST /api/auth/register', () => {
   it('creates a user and returns access token + refresh cookie', async () => {
     mockUser.findUnique.mockResolvedValue(null)
-    mockUser.create.mockResolvedValue({ ...FAKE_USER, email: 'new@test.com', name: 'New User', role: 'STUDENT' })
+    mockUser.create.mockResolvedValue({
+      ...FAKE_USER,
+      email: 'new@test.com',
+      name: 'New User',
+      role: 'STUDENT',
+    })
     mockUser.update.mockResolvedValue({})
 
     const res = await request(app)
@@ -104,9 +109,7 @@ describe('POST /api/auth/register', () => {
   })
 
   it('returns 400 when required fields are missing', async () => {
-    const res = await request(app)
-      .post('/api/auth/register')
-      .send({ email: 'x@test.com' })
+    const res = await request(app).post('/api/auth/register').send({ email: 'x@test.com' })
 
     expect(res.status).toBe(400)
   })
@@ -209,9 +212,7 @@ describe('RBAC: role-based access control', () => {
   it('rejects STUDENT token on admin-only route (403)', async () => {
     const token = makeAccessToken({ id: 'student-001', role: 'STUDENT', email: 'student@test.com' })
 
-    const res = await request(app)
-      .get('/api/admin/users')
-      .set('Authorization', `Bearer ${token}`)
+    const res = await request(app).get('/api/admin/users').set('Authorization', `Bearer ${token}`)
 
     expect(res.status).toBe(403)
   })

@@ -1,8 +1,12 @@
 import { Router } from 'express'
 import { authenticate, requireRole } from '../middleware/auth.js'
 import {
-  getExternalGrades, createExternalAssignment, updateExternalAssignment,
-  deleteExternalAssignment, setExternalGrade, curveExternalAssignment,
+  getExternalGrades,
+  createExternalAssignment,
+  updateExternalAssignment,
+  deleteExternalAssignment,
+  setExternalGrade,
+  curveExternalAssignment,
 } from '../controllers/externalGrades.controller.js'
 
 const router = Router()

@@ -11,7 +11,8 @@ import { logger } from '../lib/logger.js'
 export async function submitAssignment(req: AuthRequest, res: Response) {
   const { assignmentId, answers } = req.body
   if (!assignmentId || !answers) {
-    res.status(400).json({ error: 'assignmentId and answers are required' }); return
+    res.status(400).json({ error: 'assignmentId and answers are required' })
+    return
   }
 
   const assignment = await prisma.assignment.findUnique({
@@ -22,7 +23,10 @@ export async function submitAssignment(req: AuthRequest, res: Response) {
       classroom: { select: { teacherId: true } },
     },
   })
-  if (!assignment) { res.status(404).json({ error: 'Assignment not found' }); return }
+  if (!assignment) {
+    res.status(404).json({ error: 'Assignment not found' })
+    return
+  }
 
   // A student may have a previous submission. Decide whether this is a first
   // submission or an allowed resubmission.
@@ -32,18 +36,20 @@ export async function submitAssignment(req: AuthRequest, res: Response) {
   const isResubmission = !!existing
   if (existing) {
     if (!assignment.resubmissionsAllowed) {
-      res.status(409).json({ error: 'Resubmissions are not allowed for this assignment.' }); return
+      res.status(409).json({ error: 'Resubmissions are not allowed for this assignment.' })
+      return
     }
     if (existing.resubmissionCount >= assignment.maxResubmissions) {
       res.status(409).json({
         error: `You have reached the maximum of ${assignment.maxResubmissions} resubmission(s).`,
-      }); return
+      })
+      return
     }
   }
 
   const { gradedAnswers, totalScore } = gradeSubmission(assignment.questions, answers)
 
-  const answerData = gradedAnswers.map(a => ({
+  const answerData = gradedAnswers.map((a) => ({
     questionId: a.questionId,
     responseText: a.responseText,
     isCorrect: a.isCorrect,
@@ -84,14 +90,19 @@ export async function submitAssignment(req: AuthRequest, res: Response) {
 
   // Notify the teacher that a student submitted (or resubmitted).
   if (assignment.classroom?.teacherId) {
-    const student = await prisma.user.findUnique({ where: { id: req.user!.id }, select: { name: true } })
+    const student = await prisma.user.findUnique({
+      where: { id: req.user!.id },
+      select: { name: true },
+    })
     createNotification(
       assignment.classroom.teacherId,
       'SUBMISSION',
       isResubmission ? 'A student resubmitted work' : 'New submission received',
       `${student?.name ?? 'A student'} ${isResubmission ? 'resubmitted' : 'submitted'} "${assignment.title}".`,
-      `/teacher/submission/${submission.id}`,
-    ).catch((e: Error) => logger.error({ err: e.message }, '[notification] teacher submission alert failed'))
+      `/teacher/submission/${submission.id}`
+    ).catch((e: Error) =>
+      logger.error({ err: e.message }, '[notification] teacher submission alert failed')
+    )
   }
 
   // Notify student their assignment was graded (for auto-graded submissions)
@@ -101,17 +112,22 @@ export async function submitAssignment(req: AuthRequest, res: Response) {
       'GRADED',
       'Your assignment was graded',
       `Your submission for "${assignment.title}" has been graded.`,
-      `/student/submission/${submission.id}`,
-    ).catch((e: Error) => logger.error({ err: e.message }, '[notification] student graded alert failed'))
+      `/student/submission/${submission.id}`
+    ).catch((e: Error) =>
+      logger.error({ err: e.message }, '[notification] student graded alert failed')
+    )
   }
 
   // Fire plagiarism check async (fire and forget)
   checkPlagiarism(submission.id)
 
   try {
-    const student = await prisma.user.findUnique({ where: { id: req.user!.id }, select: { name: true } })
+    const student = await prisma.user.findUnique({
+      where: { id: req.user!.id },
+      select: { name: true },
+    })
     const progress = await getStudentProgress(req.user!.id)
-    const weakTags = progress.weakAreas.map(w => w.tag)
+    const weakTags = progress.weakAreas.map((w) => w.tag)
     const aiSuggestion = await generateStudentFeedback({
       firstName: student!.name.split(' ')[0],
       assignmentTitle: assignment.title,
@@ -142,14 +158,19 @@ export async function getSubmission(req: AuthRequest, res: Response) {
       assignment: { include: { classroom: { select: { teacherId: true } } } },
     },
   })
-  if (!submission) { res.status(404).json({ error: 'Not found' }); return }
+  if (!submission) {
+    res.status(404).json({ error: 'Not found' })
+    return
+  }
   // Students may only read their own submission.
   if (req.user!.role === 'STUDENT' && submission.studentId !== req.user!.id) {
-    res.status(403).json({ error: 'Forbidden' }); return
+    res.status(403).json({ error: 'Forbidden' })
+    return
   }
   // Teachers may only read submissions in their own classrooms.
   if (req.user!.role === 'TEACHER' && submission.assignment.classroom.teacherId !== req.user!.id) {
-    res.status(403).json({ error: 'Forbidden' }); return
+    res.status(403).json({ error: 'Forbidden' })
+    return
   }
   res.json(submission)
 }
@@ -161,7 +182,8 @@ export async function getAssignmentSubmissions(req: AuthRequest, res: Response) 
     include: { classroom: true },
   })
   if (!assignment || assignment.classroom.teacherId !== req.user!.id) {
-    res.status(403).json({ error: 'Forbidden' }); return
+    res.status(403).json({ error: 'Forbidden' })
+    return
   }
   const submissions = await prisma.submission.findMany({
     where: { assignmentId },
@@ -190,15 +212,19 @@ export async function teacherGrade(req: AuthRequest, res: Response) {
       assignment: { select: { title: true, classroom: { select: { teacherId: true } } } },
     },
   })
-  if (!submission) { res.status(404).json({ error: 'Not found' }); return }
+  if (!submission) {
+    res.status(404).json({ error: 'Not found' })
+    return
+  }
   if (submission.assignment.classroom.teacherId !== req.user!.id) {
-    res.status(403).json({ error: 'Forbidden' }); return
+    res.status(403).json({ error: 'Forbidden' })
+    return
   }
 
   const totalScore = await prisma.$transaction(async (tx) => {
     if (Array.isArray(grades)) {
       await Promise.all(
-        (grades as { answerId: string; pointsAwarded: number }[]).map(g =>
+        (grades as { answerId: string; pointsAwarded: number }[]).map((g) =>
           tx.answer.update({
             where: { id: g.answerId },
             data: { pointsAwarded: Math.max(0, Number(g.pointsAwarded)) },
@@ -233,8 +259,10 @@ export async function teacherGrade(req: AuthRequest, res: Response) {
     'GRADED',
     'Your assignment was graded',
     `Your submission for "${submission.assignment.title}" has been graded. Score: ${totalScore.toFixed(0)}%`,
-    `/student/submission/${id}`,
-  ).catch((e: Error) => logger.error({ err: e.message }, '[notification] teacher grade alert failed'))
+    `/student/submission/${id}`
+  ).catch((e: Error) =>
+    logger.error({ err: e.message }, '[notification] teacher grade alert failed')
+  )
 
   res.json({ ok: true, totalScore })
 }
@@ -244,9 +272,13 @@ export async function dismissPlagiarism(req: AuthRequest, res: Response) {
     where: { id: req.params.id },
     include: { assignment: { include: { classroom: true } } },
   })
-  if (!submission) { res.status(404).json({ error: 'Not found' }); return }
+  if (!submission) {
+    res.status(404).json({ error: 'Not found' })
+    return
+  }
   if (req.user!.role === 'TEACHER' && submission.assignment.classroom.teacherId !== req.user!.id) {
-    res.status(403).json({ error: 'Forbidden' }); return
+    res.status(403).json({ error: 'Forbidden' })
+    return
   }
   await prisma.submission.update({
     where: { id: req.params.id },

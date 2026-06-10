@@ -1,6 +1,10 @@
 import { Router } from 'express'
 import { authenticate, requireRole } from '../middleware/auth.js'
-import { exportClassroomCSV, exportStudentReport, exportStudentPDF } from '../controllers/export.controller.js'
+import {
+  exportClassroomCSV,
+  exportStudentReport,
+  exportStudentPDF,
+} from '../controllers/export.controller.js'
 
 const router = Router()
 

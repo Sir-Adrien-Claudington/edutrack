@@ -1,6 +1,11 @@
 import { Router } from 'express'
 import { authenticate, requireRole } from '../middleware/auth.js'
-import { getRubrics, createRubric, updateRubric, deleteRubric } from '../controllers/rubric.controller.js'
+import {
+  getRubrics,
+  createRubric,
+  updateRubric,
+  deleteRubric,
+} from '../controllers/rubric.controller.js'
 
 const router = Router()
 router.use(authenticate, requireRole('TEACHER'))

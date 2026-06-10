@@ -4,13 +4,25 @@ import { AuthRequest } from '../middleware/auth.js'
 
 export async function sendMessage(req: AuthRequest, res: Response) {
   const { recipientId, classroomId, body } = req.body
-  if (!body?.trim()) { res.status(400).json({ error: 'Message body required' }); return }
-  if (!recipientId && !classroomId) { res.status(400).json({ error: 'recipientId or classroomId required' }); return }
+  if (!body?.trim()) {
+    res.status(400).json({ error: 'Message body required' })
+    return
+  }
+  if (!recipientId && !classroomId) {
+    res.status(400).json({ error: 'recipientId or classroomId required' })
+    return
+  }
   if (req.user!.role === 'STUDENT' && !recipientId) {
-    res.status(403).json({ error: 'Students can only send direct messages' }); return
+    res.status(403).json({ error: 'Students can only send direct messages' })
+    return
   }
   const message = await prisma.message.create({
-    data: { senderId: req.user!.id, recipientId: recipientId ?? null, classroomId: classroomId ?? null, body },
+    data: {
+      senderId: req.user!.id,
+      recipientId: recipientId ?? null,
+      classroomId: classroomId ?? null,
+      body,
+    },
     include: { sender: { select: { name: true, role: true } } },
   })
   res.status(201).json(message)
@@ -23,13 +35,20 @@ export async function getMyMessages(req: AuthRequest, res: Response) {
       OR: [
         { recipientId: userId },
         { senderId: userId },
-        ...(req.user!.role === 'STUDENT' ? [{
-          classroom: { enrollments: { some: { studentId: userId } } },
-          recipientId: null,
-        }] : []),
+        ...(req.user!.role === 'STUDENT'
+          ? [
+              {
+                classroom: { enrollments: { some: { studentId: userId } } },
+                recipientId: null,
+              },
+            ]
+          : []),
       ],
     },
-    include: { sender: { select: { id: true, name: true, role: true } }, classroom: { select: { name: true } } },
+    include: {
+      sender: { select: { id: true, name: true, role: true } },
+      classroom: { select: { name: true } },
+    },
     orderBy: { createdAt: 'desc' },
   })
   res.json(messages)
@@ -39,11 +58,14 @@ export async function getClassroomMessages(req: AuthRequest, res: Response) {
   const { classroomId } = req.params
   const classroom = await prisma.classroom.findUnique({ where: { id: classroomId } })
   const isTeacher = classroom?.teacherId === req.user!.id
-  const isEnrolled = !isTeacher && !!await prisma.enrollment.findFirst({
-    where: { classroomId, studentId: req.user!.id },
-  })
+  const isEnrolled =
+    !isTeacher &&
+    !!(await prisma.enrollment.findFirst({
+      where: { classroomId, studentId: req.user!.id },
+    }))
   if (!classroom || (!isTeacher && !isEnrolled)) {
-    res.status(403).json({ error: 'Forbidden' }); return
+    res.status(403).json({ error: 'Forbidden' })
+    return
   }
   const messages = await prisma.message.findMany({
     where: { classroomId, recipientId: null },

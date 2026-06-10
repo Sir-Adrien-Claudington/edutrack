@@ -2,7 +2,7 @@ import { useEffect } from 'react'
 import { useThemeStore } from '../store/theme.store'
 
 export default function ElectronTitleBar() {
-  const dark = useThemeStore(s => s.dark)
+  const dark = useThemeStore((s) => s.dark)
 
   useEffect(() => {
     if (!window.electron?.setTitleBarOverlay) return

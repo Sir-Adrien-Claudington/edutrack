@@ -1,6 +1,10 @@
 import { Router } from 'express'
 import { authenticate, requireRole } from '../middleware/auth.js'
-import { getAnnouncements, createAnnouncement, deleteAnnouncement } from '../controllers/announcements.controller.js'
+import {
+  getAnnouncements,
+  createAnnouncement,
+  deleteAnnouncement,
+} from '../controllers/announcements.controller.js'
 
 const router = Router()
 router.use(authenticate, requireRole('TEACHER'))

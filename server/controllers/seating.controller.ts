@@ -6,7 +6,8 @@ export async function getSeating(req: AuthRequest, res: Response) {
   const { id: classroomId } = req.params
   const classroom = await prisma.classroom.findUnique({ where: { id: classroomId } })
   if (!classroom || classroom.teacherId !== req.user!.id) {
-    res.status(403).json({ error: 'Forbidden' }); return
+    res.status(403).json({ error: 'Forbidden' })
+    return
   }
   const chart = await prisma.seatingChart.findUnique({ where: { classroomId } })
   if (!chart) {
@@ -20,7 +21,8 @@ export async function saveSeating(req: AuthRequest, res: Response) {
   const { id: classroomId } = req.params
   const classroom = await prisma.classroom.findUnique({ where: { id: classroomId } })
   if (!classroom || classroom.teacherId !== req.user!.id) {
-    res.status(403).json({ error: 'Forbidden' }); return
+    res.status(403).json({ error: 'Forbidden' })
+    return
   }
   const { rows, cols, seats } = req.body
   const chart = await prisma.seatingChart.upsert({

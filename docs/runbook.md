@@ -21,15 +21,18 @@ railway variables set KEY=value
 ### Option A — Code rollback (most common)
 
 1. Find the last good commit:
+
    ```bash
    git log --oneline -10
    ```
 
 2. Create a rollback commit (preferred over `git revert` for speed):
+
    ```bash
    git revert HEAD --no-edit
    git push
    ```
+
    Railway auto-deploys on push.
 
 3. Verify the deploy in Railway dashboard → **Deployments** → confirm new deploy goes green.
@@ -90,38 +93,41 @@ After every Railway deployment, run this checklist before closing the deploy tab
 
 ## Performance targets
 
-| Metric | Target |
-|--------|--------|
+| Metric                | Target  |
+| --------------------- | ------- |
 | API p95 response time | < 500ms |
-| AI insight generation | < 5s |
-| Health check | < 100ms |
+| AI insight generation | < 5s    |
+| Health check          | < 100ms |
 
 Monitor via Railway Metrics tab. Alert if p95 API latency exceeds 500ms for more than 5 minutes.
 
 ## Environment secrets rotation
 
-| Secret | Rotation cadence | Procedure |
-|--------|-----------------|-----------|
-| `JWT_SECRET` | 180 days | Generate new → set in Railway → redeploy. All sessions invalidated on next refresh. |
-| `JWT_REFRESH_SECRET` | 180 days | Same as above. |
-| `ANTHROPIC_API_KEY` | On suspected exposure, or annually | Rotate in Anthropic console → update Railway var. |
-| `GOOGLE_CLIENT_SECRET` | On suspected exposure | Rotate in Google Cloud Console → update Railway var. |
-| `SENTRY_DSN` | On org/project deletion | Update in Sentry project settings → update Railway var. |
-| `DATABASE_URL` | On suspected exposure | Rotate credentials in Neon dashboard → update Railway var. Run smoke test immediately after. |
+| Secret                 | Rotation cadence                   | Procedure                                                                                    |
+| ---------------------- | ---------------------------------- | -------------------------------------------------------------------------------------------- |
+| `JWT_SECRET`           | 180 days                           | Generate new → set in Railway → redeploy. All sessions invalidated on next refresh.          |
+| `JWT_REFRESH_SECRET`   | 180 days                           | Same as above.                                                                               |
+| `ANTHROPIC_API_KEY`    | On suspected exposure, or annually | Rotate in Anthropic console → update Railway var.                                            |
+| `GOOGLE_CLIENT_SECRET` | On suspected exposure              | Rotate in Google Cloud Console → update Railway var.                                         |
+| `SENTRY_DSN`           | On org/project deletion            | Update in Sentry project settings → update Railway var.                                      |
+| `DATABASE_URL`         | On suspected exposure              | Rotate credentials in Neon dashboard → update Railway var. Run smoke test immediately after. |
 
 Rotate `JWT_SECRET` and `JWT_REFRESH_SECRET` every **180 days**.
 
 1. Generate new secrets:
+
    ```bash
    node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"
    ```
 
 2. Set in Railway:
+
    ```bash
    railway variables set JWT_SECRET=<new> JWT_REFRESH_SECRET=<new>
    ```
 
 3. Deploy to pick up new secrets:
+
    ```bash
    railway up --detach
    ```

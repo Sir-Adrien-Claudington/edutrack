@@ -1,6 +1,13 @@
 import { Router } from 'express'
 import { authenticate, requireRole } from '../middleware/auth.js'
-import { submitAssignment, getSubmission, getAssignmentSubmissions, getMySubmissions, dismissPlagiarism, teacherGrade } from '../controllers/submission.controller.js'
+import {
+  submitAssignment,
+  getSubmission,
+  getAssignmentSubmissions,
+  getMySubmissions,
+  dismissPlagiarism,
+  teacherGrade,
+} from '../controllers/submission.controller.js'
 import { promptGuard } from '../middleware/promptGuard.js'
 
 const router = Router()

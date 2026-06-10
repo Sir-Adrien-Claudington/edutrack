@@ -15,7 +15,10 @@ export async function studentProgress(req: AuthRequest, res: Response) {
     const enrolled = await prisma.enrollment.findFirst({
       where: { studentId, classroom: { teacherId: req.user!.id } },
     })
-    if (!enrolled) { res.status(403).json({ error: 'Forbidden' }); return }
+    if (!enrolled) {
+      res.status(403).json({ error: 'Forbidden' })
+      return
+    }
   }
 
   const data = await getStudentProgress(studentId)
@@ -26,7 +29,8 @@ export async function classroomAnalytics(req: AuthRequest, res: Response) {
   const { classroomId } = req.params
   const classroom = await prisma.classroom.findUnique({ where: { id: classroomId } })
   if (!classroom || classroom.teacherId !== req.user!.id) {
-    res.status(403).json({ error: 'Forbidden' }); return
+    res.status(403).json({ error: 'Forbidden' })
+    return
   }
   const data = await getClassroomAnalytics(classroomId)
   res.json(data)
@@ -36,20 +40,27 @@ export async function classInsight(req: AuthRequest, res: Response) {
   const { classroomId } = req.params
   const classroom = await prisma.classroom.findUnique({ where: { id: classroomId } })
   if (!classroom || classroom.teacherId !== req.user!.id) {
-    res.status(403).json({ error: 'Forbidden' }); return
+    res.status(403).json({ error: 'Forbidden' })
+    return
   }
   const hit = _insightCache.get(classroomId)
   if (hit && hit.expiresAt > Date.now()) {
-    res.json({ insight: hit.insight }); return
+    res.json({ insight: hit.insight })
+    return
   }
 
   const data = await getClassroomAnalytics(classroomId)
   const submissions = data.studentStats
-    .filter(s => s.averageScore !== null)
-    .map(s => ({ studentName: s.studentName.split(' ')[0], score: s.averageScore!, weakTags: s.weakTags }))
+    .filter((s) => s.averageScore !== null)
+    .map((s) => ({
+      studentName: s.studentName.split(' ')[0],
+      score: s.averageScore!,
+      weakTags: s.weakTags,
+    }))
 
   if (submissions.length === 0) {
-    res.json({ insight: 'No submission data yet to generate insights.' }); return
+    res.json({ insight: 'No submission data yet to generate insights.' })
+    return
   }
   try {
     const insight = await generateClassInsight({ classroomName: classroom.name, submissions })

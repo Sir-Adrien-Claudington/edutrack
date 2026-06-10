@@ -40,44 +40,50 @@ export function createApp() {
 
   app.set('trust proxy', 1)
 
-  app.use(helmet({
-    contentSecurityPolicy: {
-      directives: {
-        defaultSrc: ["'self'"],
-        scriptSrc: ["'self'"],
-        styleSrc: ["'self'", 'https://fonts.googleapis.com'],
-        fontSrc: ["'self'", 'https://fonts.gstatic.com'],
-        imgSrc: ["'self'", 'data:', 'https:'],
-        connectSrc: ["'self'", 'https:'],
-        objectSrc: ["'none'"],
-        frameSrc: ["'none'"],
+  app.use(
+    helmet({
+      contentSecurityPolicy: {
+        directives: {
+          defaultSrc: ["'self'"],
+          scriptSrc: ["'self'"],
+          styleSrc: ["'self'", 'https://fonts.googleapis.com'],
+          fontSrc: ["'self'", 'https://fonts.gstatic.com'],
+          imgSrc: ["'self'", 'data:', 'https:'],
+          connectSrc: ["'self'", 'https:'],
+          objectSrc: ["'none'"],
+          frameSrc: ["'none'"],
+        },
       },
-    },
-    crossOriginEmbedderPolicy: false,
-  }))
+      crossOriginEmbedderPolicy: false,
+    })
+  )
 
   const allowedOrigins = process.env.CORS_ORIGIN
-    ? process.env.CORS_ORIGIN.split(',').map(o => o.trim())
+    ? process.env.CORS_ORIGIN.split(',').map((o) => o.trim())
     : ['http://localhost:5173', 'http://localhost:4000']
-  app.use(cors({
-    origin: (origin, callback) => {
-      if (!origin || allowedOrigins.includes(origin)) callback(null, true)
-      else callback(new Error('Not allowed by CORS'))
-    },
-    credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
-  }))
+  app.use(
+    cors({
+      origin: (origin, callback) => {
+        if (!origin || allowedOrigins.includes(origin)) callback(null, true)
+        else callback(new Error('Not allowed by CORS'))
+      },
+      credentials: true,
+      methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+      allowedHeaders: ['Content-Type', 'Authorization'],
+    })
+  )
 
-  app.use(pinoHttp({
-    logger,
-    redact: { paths: ['req.headers.authorization', 'req.headers.cookie'], censor: '[REDACTED]' },
-    genReqId: (req, res) => {
-      const id = (req.headers['x-request-id'] as string) ?? randomUUID()
-      res.setHeader('X-Request-ID', id)
-      return id
-    },
-  }))
+  app.use(
+    pinoHttp({
+      logger,
+      redact: { paths: ['req.headers.authorization', 'req.headers.cookie'], censor: '[REDACTED]' },
+      genReqId: (req, res) => {
+        const id = (req.headers['x-request-id'] as string) ?? randomUUID()
+        res.setHeader('X-Request-ID', id)
+        return id
+      },
+    })
+  )
   app.use(cookieParser())
   app.use(express.json({ limit: '1mb' }))
 
@@ -85,14 +91,23 @@ export function createApp() {
   app.use('/api/auth/login', loginLimiter)
   app.use('/api/auth/register', registerLimiter)
   app.use('/api/auth/mfa', mfaLimiter)
-  app.use('/api/', (_req, res, next) => { res.setHeader('Cache-Control', 'no-store'); next() })
+  app.use('/api/', (_req, res, next) => {
+    res.setHeader('Cache-Control', 'no-store')
+    next()
+  })
 
   app.get('/health', (_req, res) => {
-    res.json({ status: 'ok', timestamp: new Date().toISOString(), environment: process.env.NODE_ENV ?? 'development' })
+    res.json({
+      status: 'ok',
+      timestamp: new Date().toISOString(),
+      environment: process.env.NODE_ENV ?? 'development',
+    })
   })
 
   const APP_VERSION = process.env.RAILWAY_GIT_COMMIT_SHA ?? process.env.npm_package_version ?? 'dev'
-  app.get('/api/version', (_req, res) => { res.json({ version: APP_VERSION }) })
+  app.get('/api/version', (_req, res) => {
+    res.json({ version: APP_VERSION })
+  })
 
   app.use('/api/auth', authRoutes)
   app.use('/api/auth/mfa', mfaRoutes)
@@ -120,7 +135,9 @@ export function createApp() {
 
   if (process.env.NODE_ENV === 'production') {
     app.use(express.static(join(__dirname, '../dist')))
-    app.get('*path', (_req, res) => { res.sendFile(join(__dirname, '../dist/index.html')) })
+    app.get('*path', (_req, res) => {
+      res.sendFile(join(__dirname, '../dist/index.html'))
+    })
   }
 
   Sentry.setupExpressErrorHandler(app)
