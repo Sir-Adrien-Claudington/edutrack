@@ -100,6 +100,15 @@ Monitor via Railway Metrics tab. Alert if p95 API latency exceeds 500ms for more
 
 ## Environment secrets rotation
 
+| Secret | Rotation cadence | Procedure |
+|--------|-----------------|-----------|
+| `JWT_SECRET` | 180 days | Generate new → set in Railway → redeploy. All sessions invalidated on next refresh. |
+| `JWT_REFRESH_SECRET` | 180 days | Same as above. |
+| `ANTHROPIC_API_KEY` | On suspected exposure, or annually | Rotate in Anthropic console → update Railway var. |
+| `GOOGLE_CLIENT_SECRET` | On suspected exposure | Rotate in Google Cloud Console → update Railway var. |
+| `SENTRY_DSN` | On org/project deletion | Update in Sentry project settings → update Railway var. |
+| `DATABASE_URL` | On suspected exposure | Rotate credentials in Neon dashboard → update Railway var. Run smoke test immediately after. |
+
 Rotate `JWT_SECRET` and `JWT_REFRESH_SECRET` every **180 days**.
 
 1. Generate new secrets:

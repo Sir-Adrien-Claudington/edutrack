@@ -32,6 +32,8 @@ export default defineConfig([
       'react-hooks/set-state-in-effect': 'warn',
       // Legitimate "capture latest value" ref pattern — not a render-blocking issue
       'react-hooks/refs': 'warn',
+      // Flag functions exceeding cyclomatic complexity 10
+      'complexity': ['warn', 10],
     },
   },
 ])

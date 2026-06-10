@@ -16,13 +16,9 @@ function validatePassword(password: string): string | null {
 }
 
 export async function register(req: Request, res: Response) {
-  const { email, password, name, role } = req.body
-  if (!email || !password || !name || !role) {
+  const { email, password, name } = req.body
+  if (!email || !password || !name) {
     res.status(400).json({ error: 'All fields are required' })
-    return
-  }
-  if (!['TEACHER', 'STUDENT'].includes(role)) {
-    res.status(400).json({ error: 'Role must be TEACHER or STUDENT' })
     return
   }
   if (typeof name !== 'string' || name.trim().length === 0 || name.length > 100) {
@@ -43,7 +39,7 @@ export async function register(req: Request, res: Response) {
   }
   const passwordHash = await bcrypt.hash(password, 12)
   const user = await prisma.user.create({
-    data: { email: email.toLowerCase().trim(), passwordHash, name: name.trim(), role },
+    data: { email: email.toLowerCase().trim(), passwordHash, name: name.trim(), role: 'STUDENT' },
   })
   const tokens = generateTokens(user)
   setRefreshCookie(res, tokens.refresh)
@@ -136,7 +132,11 @@ export async function refresh(req: Request, res: Response) {
       res.status(401).json({ error: 'Session expired' })
       return
     }
-    const tokens = generateTokens(user)
+    const refreshed = await prisma.user.update({
+      where: { id: user.id },
+      data: { tokenVersion: { increment: 1 } },
+    })
+    const tokens = generateTokens(refreshed)
     setRefreshCookie(res, tokens.refresh)
     res.json({ access: tokens.access })
   } catch {

@@ -27,8 +27,14 @@ jobs:
       - name: TypeScript check
         run: npx tsc -b --noEmit
 
+      - name: Lint
+        run: npm run lint
+
       - name: Run tests
         run: npm test
+
+      - name: Format check
+        run: npx prettier --check .
 
       - name: Audit for high-severity vulnerabilities
         run: npm audit --audit-level=high --omit=dev
