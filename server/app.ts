@@ -7,7 +7,7 @@ import cookieParser from 'cookie-parser'
 import pinoHttp from 'pino-http'
 import { join, dirname } from 'path'
 import { fileURLToPath } from 'url'
-import { loginLimiter, registerLimiter, apiLimiter } from './middleware/rateLimiter.js'
+import { loginLimiter, registerLimiter, apiLimiter, mfaLimiter } from './middleware/rateLimiter.js'
 import { logger } from './lib/logger.js'
 import authRoutes from './routes/auth.js'
 import mfaRoutes from './routes/mfa.js'
@@ -84,6 +84,8 @@ export function createApp() {
   app.use(apiLimiter)
   app.use('/api/auth/login', loginLimiter)
   app.use('/api/auth/register', registerLimiter)
+  app.use('/api/auth/mfa', mfaLimiter)
+  app.use('/api/', (_req, res, next) => { res.setHeader('Cache-Control', 'no-store'); next() })
 
   app.get('/health', (_req, res) => {
     res.json({ status: 'ok', timestamp: new Date().toISOString(), environment: process.env.NODE_ENV ?? 'development' })

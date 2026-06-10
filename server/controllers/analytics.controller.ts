@@ -5,6 +5,8 @@ import { generateClassInsight } from '../services/ai.service.js'
 import { prisma } from '../prisma/client.js'
 import { logger } from '../lib/logger.js'
 
+const _insightCache = new Map<string, { insight: string; expiresAt: number }>()
+
 export async function studentProgress(req: AuthRequest, res: Response) {
   const studentId = req.user!.role === 'STUDENT' ? req.user!.id : req.params.studentId
 
@@ -36,6 +38,11 @@ export async function classInsight(req: AuthRequest, res: Response) {
   if (!classroom || classroom.teacherId !== req.user!.id) {
     res.status(403).json({ error: 'Forbidden' }); return
   }
+  const hit = _insightCache.get(classroomId)
+  if (hit && hit.expiresAt > Date.now()) {
+    res.json({ insight: hit.insight }); return
+  }
+
   const data = await getClassroomAnalytics(classroomId)
   const submissions = data.studentStats
     .filter(s => s.averageScore !== null)
@@ -46,6 +53,7 @@ export async function classInsight(req: AuthRequest, res: Response) {
   }
   try {
     const insight = await generateClassInsight({ classroomName: classroom.name, submissions })
+    _insightCache.set(classroomId, { insight, expiresAt: Date.now() + 10 * 60 * 1000 })
     res.json({ insight })
   } catch (err: any) {
     // Surface a clear, safe message to the UI instead of an unhandled 500.

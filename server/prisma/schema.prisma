@@ -99,7 +99,7 @@ model Classroom {
   name          String
   teacherId     String
   classCode     String   @unique
-  classPassword String?
+  classPasswordHash String? @map("classPassword")
   yearLevel     Int?
   archived      Boolean  @default(false)
   createdAt     DateTime @default(now())

@@ -23,3 +23,11 @@ export const apiLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
 })
+
+export const mfaLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  message: { error: 'Too many MFA attempts, please try again later' },
+  standardHeaders: true,
+  legacyHeaders: false,
+})

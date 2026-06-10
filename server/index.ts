@@ -129,7 +129,7 @@ async function runDailyReminders() {
         },
       })
     }
-  } catch {
-    // Scheduler errors must not crash the server
+  } catch (err: unknown) {
+    logger.warn({ err: err instanceof Error ? err.message : String(err) }, 'Scheduler run failed')
   }
 }

@@ -4,6 +4,12 @@ import { prisma } from '../prisma/client.js'
 import { AuthRequest } from '../middleware/auth.js'
 import { nanoid } from 'nanoid'
 
+function strip<T extends { classPasswordHash?: string | null }>(obj: T): Omit<T, 'classPasswordHash'> {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { classPasswordHash: _, ...rest } = obj
+  return rest
+}
+
 export async function createClassroom(req: AuthRequest, res: Response) {
   const { name, yearLevel, classPassword } = req.body
   if (!name) { res.status(400).json({ error: 'Name is required' }); return }
@@ -14,10 +20,10 @@ export async function createClassroom(req: AuthRequest, res: Response) {
       teacherId: req.user!.id,
       classCode,
       yearLevel: yearLevel ? Number(yearLevel) : null,
-      classPassword: classPassword || null,
+      classPasswordHash: classPassword ? await bcrypt.hash(classPassword, 12) : null,
     },
   })
-  res.status(201).json(classroom)
+  res.status(201).json(strip(classroom))
 }
 
 export async function updateClassroom(req: AuthRequest, res: Response) {
@@ -31,10 +37,10 @@ export async function updateClassroom(req: AuthRequest, res: Response) {
     data: {
       ...(name && { name }),
       yearLevel: yearLevel !== undefined ? (yearLevel ? Number(yearLevel) : null) : undefined,
-      classPassword: classPassword !== undefined ? (classPassword || null) : undefined,
+      classPasswordHash: classPassword !== undefined ? (classPassword ? await bcrypt.hash(classPassword, 12) : null) : undefined,
     },
   })
-  res.json(updated)
+  res.json(strip(updated))
 }
 
 export async function getMyClassrooms(req: AuthRequest, res: Response) {
@@ -43,7 +49,7 @@ export async function getMyClassrooms(req: AuthRequest, res: Response) {
       where: { teacherId: req.user!.id },
       include: { _count: { select: { enrollments: true, assignments: true } } },
     })
-    res.json(classrooms)
+    res.json(classrooms.map(strip))
   } else {
     const enrollments = await prisma.enrollment.findMany({
       where: { studentId: req.user!.id },
@@ -53,7 +59,7 @@ export async function getMyClassrooms(req: AuthRequest, res: Response) {
         },
       },
     })
-    res.json(enrollments.map(e => e.classroom))
+    res.json(enrollments.map(e => strip(e.classroom)))
   }
 }
 
@@ -85,7 +91,7 @@ export async function getClassroom(req: AuthRequest, res: Response) {
     if (!enrolled) { res.status(403).json({ error: 'Forbidden' }); return }
     // Strip peer student emails — students only see their own email
     res.json({
-      ...classroom,
+      ...strip(classroom),
       enrollments: classroom.enrollments.map(e => ({
         ...e,
         student: {
@@ -100,7 +106,7 @@ export async function getClassroom(req: AuthRequest, res: Response) {
     return
   }
 
-  res.json(classroom)
+  res.json(strip(classroom))
 }
 
 export async function joinClassroom(req: AuthRequest, res: Response) {
@@ -113,7 +119,7 @@ export async function joinClassroom(req: AuthRequest, res: Response) {
   })
   if (existing) { res.status(409).json({ error: 'Already enrolled' }); return }
   await prisma.enrollment.create({ data: { studentId: req.user!.id, classroomId: classroom.id } })
-  res.status(201).json(classroom)
+  res.status(201).json(strip(classroom))
 }
 
 export async function createStudent(req: AuthRequest, res: Response) {

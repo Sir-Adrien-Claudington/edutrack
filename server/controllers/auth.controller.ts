@@ -79,8 +79,12 @@ export async function login(req: Request, res: Response) {
     if (!user) { res.status(401).json({ error: 'Invalid credentials' }); return }
     if (user.suspended) { res.status(403).json({ error: 'Account suspended' }); return }
     const matchingClass = user.enrollments.find(e => e.classroom.classCode === classCode)
-    if (!matchingClass) { res.status(401).json({ error: 'Invalid username or class code' }); return }
+    if (!matchingClass) {
+      logger.warn({ event: 'LOGIN_FAILED', username }, 'login failed: invalid username or class code')
+      res.status(401).json({ error: 'Invalid username or class code' }); return
+    }
     await prisma.user.update({ where: { id: user.id }, data: { lastLoginAt: new Date() } })
+    logger.info({ event: 'LOGIN_SUCCESS', userId: user.id, role: user.role }, 'login success')
     const tokens = generateTokens(user)
     setRefreshCookie(res, tokens.refresh)
     res.json({ user: { id: user.id, email: user.email, name: user.name, role: user.role }, access: tokens.access })
@@ -103,6 +107,7 @@ export async function login(req: Request, res: Response) {
   }
   const valid = await bcrypt.compare(password, user.passwordHash)
   if (!valid) {
+    logger.warn({ event: 'LOGIN_FAILED', email: email.toLowerCase().trim() }, 'login failed: invalid password')
     res.status(401).json({ error: 'Invalid credentials' })
     return
   }
@@ -115,6 +120,7 @@ export async function login(req: Request, res: Response) {
   }
 
   await prisma.user.update({ where: { id: user.id }, data: { lastLoginAt: new Date() } })
+  logger.info({ event: 'LOGIN_SUCCESS', userId: user.id, role: user.role }, 'login success')
   const tokens = generateTokens(user)
   setRefreshCookie(res, tokens.refresh)
   res.json({
@@ -160,6 +166,7 @@ export async function logout(req: AuthRequest, res: Response) {
     }).catch((e: Error) => logger.error({ err: e.message }, '[auth] tokenVersion increment failed'))
   }
   clearRefreshCookie(res)
+  logger.info({ event: 'LOGOUT', userId: req.user?.id }, 'logout')
   res.json({ ok: true })
 }
 
