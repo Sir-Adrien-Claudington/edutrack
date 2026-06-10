@@ -77,7 +77,30 @@ DELETE FROM "_prisma_migrations" WHERE migration_name = '<migration-folder>';
 npx prisma generate --schema=server/prisma/schema.prisma
 ```
 
+## Post-deploy walk-through
+
+After every Railway deployment, run this checklist before closing the deploy tab:
+
+1. Hit `/health`: `curl https://edutrack-production-2a6d.up.railway.app/health`  
+   Expected: `{"status":"ok", ...}`
+2. Open the app URL, log in as a teacher — confirm the dashboard loads and classrooms appear.
+3. Open the app as a student — confirm assignments list loads.
+4. Check Railway logs (`railway logs`) for any ERROR lines during the first 60 seconds.
+5. If Sentry is configured, verify no new issues appeared in the Sentry dashboard.
+
+## Performance targets
+
+| Metric | Target |
+|--------|--------|
+| API p95 response time | < 500ms |
+| AI insight generation | < 5s |
+| Health check | < 100ms |
+
+Monitor via Railway Metrics tab. Alert if p95 API latency exceeds 500ms for more than 5 minutes.
+
 ## Environment secrets rotation
+
+Rotate `JWT_SECRET` and `JWT_REFRESH_SECRET` every **180 days**.
 
 1. Generate new secrets:
    ```bash
