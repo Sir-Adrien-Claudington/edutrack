@@ -22,6 +22,12 @@ export default defineConfig([
       // Downgraded to warn — codebase has widespread intentional `any` usage in Prisma
       // query builders. Clean up incrementally rather than blocking all commits.
       '@typescript-eslint/no-explicit-any': 'warn',
+      // Allow _-prefixed vars as intentional discard (e.g. const { secret: _, ...rest } = obj)
+      '@typescript-eslint/no-unused-vars': ['error', {
+        varsIgnorePattern: '^_',
+        argsIgnorePattern: '^_',
+        caughtErrorsIgnorePattern: '^_',
+      }],
       // Pre-existing pattern throughout — suppress until async effects are refactored
       'react-hooks/set-state-in-effect': 'warn',
       // Legitimate "capture latest value" ref pattern — not a render-blocking issue
