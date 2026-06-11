@@ -71,10 +71,7 @@ export async function login(req: Request, res: Response) {
     }
     const matchingClass = user.enrollments.find((e) => e.classroom.classCode === classCode)
     if (!matchingClass) {
-      logger.warn(
-        { event: 'LOGIN_FAILED' },
-        'login failed: invalid username or class code'
-      )
+      logger.warn({ event: 'LOGIN_FAILED' }, 'login failed: invalid username or class code')
       res.status(401).json({ error: 'Invalid username or class code' })
       return
     }
