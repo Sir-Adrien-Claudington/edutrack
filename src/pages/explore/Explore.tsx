@@ -7,8 +7,10 @@ import { ACCESSORIES, type Accessory, type AccessoryCategory } from './accessori
 const CATEGORY_ORDER: AccessoryCategory[] = ['Explorative Apps', 'Learning Games']
 
 const CATEGORY_BLURB: Record<AccessoryCategory, string> = {
-  'Explorative Apps': 'Interactive worlds to explore at your own pace — no right or wrong answers, just discovery.',
-  'Learning Games': 'Quick games sorted by level. Pick a difficulty that fits your class and start playing.',
+  'Explorative Apps':
+    'Interactive worlds to explore at your own pace — no right or wrong answers, just discovery.',
+  'Learning Games':
+    'Quick games sorted by level. Pick a difficulty that fits your class and start playing.',
 }
 
 const LEVEL_STYLE: Record<string, string> = {
@@ -82,7 +84,9 @@ export default function Explore() {
           <div className="text-xs font-semibold uppercase tracking-widest text-teal-600 dark:text-teal-400">
             Learning Accessories
           </div>
-          <h1 className="mt-1 text-2xl font-bold text-gray-900 dark:text-white">Explore the Universe</h1>
+          <h1 className="mt-1 text-2xl font-bold text-gray-900 dark:text-white">
+            Explore the Universe
+          </h1>
           <p className="mt-2 max-w-2xl text-sm leading-relaxed text-gray-600 dark:text-gray-300">
             {isStudent
               ? 'A library of explorative apps and learning games to learn about space. Jump into a 3D solar system, or play a quick game at your level.'
@@ -95,7 +99,9 @@ export default function Explore() {
           return (
             <section key={cat} className="mb-10">
               <h2 className="text-lg font-semibold text-gray-900 dark:text-white">{cat}</h2>
-              <p className="mt-1 mb-4 text-sm text-gray-500 dark:text-gray-400">{CATEGORY_BLURB[cat]}</p>
+              <p className="mt-1 mb-4 text-sm text-gray-500 dark:text-gray-400">
+                {CATEGORY_BLURB[cat]}
+              </p>
               <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
                 {items.map((a) => (
                   <AccessoryCard key={a.slug} a={a} />
@@ -106,7 +112,8 @@ export default function Explore() {
         })}
 
         <p className="text-xs text-gray-400 dark:text-gray-500 text-center">
-          Powered by StarScape · public educational content · no account data is shared with these apps.
+          Powered by StarScape · public educational content · no account data is shared with these
+          apps.
         </p>
       </main>
     </div>

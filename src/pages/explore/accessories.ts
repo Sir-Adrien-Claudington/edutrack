@@ -73,8 +73,7 @@ export const ACCESSORIES: Accessory[] = [
   {
     slug: 'games-intermediate',
     title: 'Space Games — Intermediate',
-    blurb:
-      'Use clues to identify mystery planets, match the stats, and tell fact from fiction.',
+    blurb: 'Use clues to identify mystery planets, match the stats, and tell fact from fiction.',
     category: 'Learning Games',
     level: 'Intermediate',
     emoji: '🛰️',

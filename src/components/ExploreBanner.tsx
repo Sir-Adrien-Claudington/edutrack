@@ -9,9 +9,7 @@ export default function ExploreBanner({ accent = 'teal' }: { accent?: 'teal' | '
       : 'hover:border-indigo-400 dark:hover:border-indigo-500'
   const badge = accent === 'teal' ? 'bg-teal-500' : 'bg-indigo-500'
   const cta =
-    accent === 'teal'
-      ? 'text-teal-600 dark:text-teal-400'
-      : 'text-indigo-600 dark:text-indigo-400'
+    accent === 'teal' ? 'text-teal-600 dark:text-teal-400' : 'text-indigo-600 dark:text-indigo-400'
 
   return (
     <Link
