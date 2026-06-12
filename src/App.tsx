@@ -22,6 +22,8 @@ import TeacherLessonPlanner from './pages/teacher/LessonPlanner'
 import TeacherInterventions from './pages/teacher/Interventions'
 import TeacherAnnouncements from './pages/teacher/Announcements'
 import MessagesPage from './pages/Messages'
+import Explore from './pages/explore/Explore'
+import AccessoryViewer from './pages/explore/AccessoryViewer'
 import AdminUsers from './pages/admin/Users'
 import AdminClassrooms from './pages/admin/Classrooms'
 import AdminContent from './pages/admin/Content'
@@ -336,6 +338,22 @@ export default function App() {
                 element={
                   <ProtectedRoute>
                     <MessagesPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/explore"
+                element={
+                  <ProtectedRoute>
+                    <Explore />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/explore/:slug"
+                element={
+                  <ProtectedRoute>
+                    <AccessoryViewer />
                   </ProtectedRoute>
                 }
               />
