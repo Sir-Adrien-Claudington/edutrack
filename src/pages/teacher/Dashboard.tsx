@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import TeacherNav from '../../components/TeacherNav'
+import ExploreBanner from '../../components/ExploreBanner'
 import api from '../../api/client'
 
 interface AtRiskStudent {
@@ -127,6 +128,8 @@ export default function TeacherDashboard() {
             </div>
           </form>
         )}
+
+        <ExploreBanner accent="indigo" />
 
         {loading ? (
           <div className="text-center py-16 text-gray-400">Loading…</div>

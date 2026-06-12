@@ -58,7 +58,7 @@ export default function TeacherAllAssignments() {
         </div>
 
         {loading ? (
-          <div className="text-center py-16 text-gray-400">Loadingâ€¦</div>
+          <div className="text-center py-16 text-gray-400">Loading…</div>
         ) : filtered.length === 0 ? (
           <div className="text-center py-16 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700">
             <p className="text-gray-400">No assignments yet</p>
@@ -75,7 +75,7 @@ export default function TeacherAllAssignments() {
                   <div>
                     <h3 className="font-medium text-gray-900 dark:text-white">{a.title}</h3>
                     <p className="text-sm text-gray-400 mt-0.5">
-                      {a.classroom.name} Â· {a._count.questions} questions
+                      {a.classroom.name} · {a._count.questions} questions
                     </p>
                   </div>
                   <div className="flex items-center gap-3 text-right">

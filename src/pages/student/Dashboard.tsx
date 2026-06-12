@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuthStore } from '../../store/auth.store'
 import StudentNav from '../../components/StudentNav'
+import ExploreBanner from '../../components/ExploreBanner'
 import api from '../../api/client'
 
 interface Assignment {
@@ -179,6 +180,8 @@ export default function StudentDashboard() {
             {joinError && <p className="text-red-500 text-sm mt-2">{joinError}</p>}
           </form>
         )}
+
+        <ExploreBanner accent="teal" />
 
         {loading ? (
           <div className="text-center py-16 text-gray-400">Loading…</div>
