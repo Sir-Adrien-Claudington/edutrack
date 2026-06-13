@@ -29,7 +29,7 @@ export default function ExploreBanner({ accent = 'teal' }: { accent?: 'teal' | '
           </span>
         </p>
         <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 truncate">
-          Explore a 3D universe and play space games — Beginner to Knowledgeable.
+          Explore 3D science worlds — space, geology and more — plus games by level.
         </p>
       </div>
       <span
