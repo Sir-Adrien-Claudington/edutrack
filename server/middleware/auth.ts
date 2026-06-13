@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express'
 import jwt from 'jsonwebtoken'
+import { logger } from '../lib/logger.js'
 
 export interface AuthRequest extends Request {
   user?: { id: string; role: string; email: string }
@@ -18,24 +19,29 @@ export async function authenticate(req: AuthRequest, res: Response, next: NextFu
       email: string
       tv?: number
     }
-    // Check tokenVersion to support force-logout (skip if Prisma client is stale)
+    // Check tokenVersion to support force-logout. Fail CLOSED: if the version
+    // can't be verified (e.g. transient DB error) reject rather than honour a
+    // token that may have been force-logged-out.
     if (payload.tv !== undefined) {
+      let dbTokenVersion: number | undefined
       try {
         const { prisma } = await import('../prisma/client.js')
         const user = await prisma.user.findUnique({
           where: { id: payload.id },
           select: { tokenVersion: true } as any,
         })
-        if (
-          user &&
-          (user as any).tokenVersion !== undefined &&
-          (user as any).tokenVersion !== payload.tv
-        ) {
-          res.status(401).json({ error: 'Session expired' })
-          return
-        }
-      } catch {
-        // Prisma client may not yet include tokenVersion — allow through
+        dbTokenVersion = user ? (user as any).tokenVersion : undefined
+      } catch (err) {
+        logger.error(
+          { err: (err as any)?.message ?? String(err) },
+          'tokenVersion verification failed'
+        )
+        res.status(401).json({ error: 'Session validation failed' })
+        return
+      }
+      if (dbTokenVersion !== undefined && dbTokenVersion !== payload.tv) {
+        res.status(401).json({ error: 'Session expired' })
+        return
       }
     }
     req.user = payload

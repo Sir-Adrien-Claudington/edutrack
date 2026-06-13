@@ -13,7 +13,9 @@ export default function GoogleCalendarConnect() {
     api
       .get('/google/status')
       .then((r) => setLinked(r.data.linked))
-      .catch(() => {})
+      .catch(() => {
+        /* non-critical prefetch; ignore failure */
+      })
       .finally(() => setLoading(false))
   }, [])
 

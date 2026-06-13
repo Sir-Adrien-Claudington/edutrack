@@ -78,7 +78,9 @@ export default function StudentDashboard() {
         .then((r) => {
           setLeaderboards((prev) => ({ ...prev, [c.id]: r.data }))
         })
-        .catch(() => {})
+        .catch(() => {
+          /* non-critical prefetch; ignore failure */
+        })
     }
   }
 

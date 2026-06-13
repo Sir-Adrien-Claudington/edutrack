@@ -46,7 +46,9 @@ export default function TeacherCalendar() {
     api
       .get('/assignments/all')
       .then((r) => setAssignments(r.data))
-      .catch(() => {})
+      .catch(() => {
+        /* non-critical prefetch; ignore failure */
+      })
   }, [])
 
   function prevMonth() {

@@ -127,7 +127,7 @@ export default function AccessoryViewer() {
                 style={{ height: 'min(78vh, 820px)', minHeight: 460, border: 0 }}
                 loading="lazy"
                 allow="fullscreen"
-                sandbox="allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox"
+                sandbox="allow-scripts allow-same-origin allow-popups"
               />
             </div>
             <p className="mt-3 text-xs text-gray-400 dark:text-gray-500">{accessory.blurb}</p>

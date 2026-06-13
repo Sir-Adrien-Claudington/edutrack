@@ -95,7 +95,9 @@ export default function ClassroomDetail() {
       api
         .get(`/classrooms/${id}/leaderboard`)
         .then((r) => setLeaderboard(r.data))
-        .catch(() => {})
+        .catch(() => {
+          /* non-critical prefetch; ignore failure */
+        })
     }
     if (tab === 'students' && id) {
       api
@@ -105,7 +107,9 @@ export default function ClassroomDetail() {
           for (const item of r.data) map[item.studentId] = { score: item.score, level: item.level }
           setEngagementMap(map)
         })
-        .catch(() => {})
+        .catch(() => {
+          /* non-critical prefetch; ignore failure */
+        })
     }
   }, [tab, id])
 

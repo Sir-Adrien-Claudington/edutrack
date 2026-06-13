@@ -51,7 +51,9 @@ export default function Announcements() {
     api
       .get('/announcements')
       .then((r) => setAnnouncements(r.data))
-      .catch(() => {})
+      .catch(() => {
+        /* non-critical prefetch; ignore failure */
+      })
   }, [])
 
   async function send(e: React.FormEvent) {

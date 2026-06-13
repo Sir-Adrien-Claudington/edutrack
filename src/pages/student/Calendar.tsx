@@ -48,7 +48,9 @@ export default function StudentCalendar() {
     api
       .get('/assignments/my')
       .then((r) => setAssignments(r.data))
-      .catch(() => {})
+      .catch(() => {
+        /* non-critical prefetch; ignore failure */
+      })
   }, [])
 
   function prevMonth() {

@@ -53,13 +53,18 @@ export async function checkPlagiarism(submissionId: string) {
 
     if (otherTexts.length === 0) return
 
+    // Sanitize display names before interpolating into the prompt so a crafted
+    // name can't perturb the model's output. (Answer text is already screened
+    // by promptGuard at submit time.)
+    const sanitizeName = (n: string) => (n ?? '').replace(/[\r\n{}"]/g, ' ').slice(0, 60)
+
     const prompt = `You are an academic integrity checker. Compare the following student submission against other submissions for the same assignment.
 
 New submission:
 ${newLongAnswers.join('\n')}
 
 Other submissions:
-${otherTexts.map((s, i) => `[${i + 1}] ${s.studentName}:\n${s.text}`).join('\n\n')}
+${otherTexts.map((s, i) => `[${i + 1}] ${sanitizeName(s.studentName)}:\n${s.text}`).join('\n\n')}
 
 Determine if the new submission is suspiciously similar to any other submission (copy-paste, paraphrasing, identical structure).
 Respond with ONLY valid JSON in this exact format:
@@ -71,11 +76,20 @@ Respond with ONLY valid JSON in this exact format:
       messages: [{ role: 'user', content: prompt }],
     })
 
-    const responseText = (message.content[0] as { type: string; text: string }).text
-    const result = JSON.parse(responseText) as {
-      flagged: boolean
-      reason: string
-      similarTo: string[]
+    // Defensively parse and validate the model's response before acting on it.
+    const first = message.content[0]
+    const responseText = first && first.type === 'text' ? (first as { text: string }).text : ''
+    let result: { flagged: boolean; reason: string }
+    try {
+      const parsed = JSON.parse(responseText)
+      if (typeof parsed?.flagged !== 'boolean' || typeof parsed?.reason !== 'string') {
+        logger.warn({ submissionId }, 'Plagiarism check: unexpected response shape — ignoring')
+        return
+      }
+      result = { flagged: parsed.flagged, reason: String(parsed.reason).slice(0, 1000) }
+    } catch {
+      logger.warn({ submissionId }, 'Plagiarism check: non-JSON response — ignoring')
+      return
     }
 
     if (result.flagged) {

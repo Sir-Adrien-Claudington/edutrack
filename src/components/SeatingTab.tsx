@@ -108,7 +108,9 @@ export default function SeatingTab({
         setCols(r.data.cols ?? 6)
         setSeats(r.data.seats ?? [])
       })
-      .catch(() => {})
+      .catch(() => {
+        /* non-critical prefetch; ignore failure */
+      })
   }, [classroomId])
 
   function getStudentAtSeat(row: number, col: number): string | null {

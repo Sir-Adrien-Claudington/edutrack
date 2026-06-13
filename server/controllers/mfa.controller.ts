@@ -9,6 +9,7 @@ import { prisma } from '../prisma/client.js'
 import { logger } from '../lib/logger.js'
 import { setRefreshCookie } from './auth.cookie.js'
 import { generateTokens } from '../lib/tokens.js'
+import { encryptSecret, decryptSecret } from '../lib/mfaCrypto.js'
 
 // GET /api/auth/mfa/setup — generate TOTP secret and QR code, save (disabled) secret to DB
 export async function setupMfa(req: AuthRequest, res: Response) {
@@ -27,10 +28,10 @@ export async function setupMfa(req: AuthRequest, res: Response) {
   const otpauthUrl = authenticator.keyuri(identifier, 'EduTrack', secret)
   const qrCodeDataUrl = await QRCode.toDataURL(otpauthUrl)
 
-  // Store the pending secret (disabled until confirmed)
+  // Store the pending secret encrypted at rest (disabled until confirmed)
   await prisma.user.update({
     where: { id: user.id },
-    data: { mfaSecret: secret, mfaEnabled: false },
+    data: { mfaSecret: encryptSecret(secret), mfaEnabled: false },
   })
 
   res.json({ secret, qrCodeDataUrl, otpauthUrl })
@@ -54,7 +55,7 @@ export async function confirmMfa(req: AuthRequest, res: Response) {
     return
   }
 
-  const valid = authenticator.verify({ token: code, secret: user.mfaSecret })
+  const valid = authenticator.verify({ token: code, secret: decryptSecret(user.mfaSecret) })
   if (!valid) {
     res.status(400).json({ error: 'Invalid TOTP code' })
     return
@@ -78,7 +79,7 @@ export async function disableMfa(req: AuthRequest, res: Response) {
     return
   }
 
-  const valid = authenticator.verify({ token: code, secret: user.mfaSecret })
+  const valid = authenticator.verify({ token: code, secret: decryptSecret(user.mfaSecret) })
   if (!valid) {
     res.status(400).json({ error: 'Invalid TOTP code' })
     return
@@ -119,7 +120,7 @@ export async function verifyMfa(req: AuthRequest, res: Response) {
     return
   }
 
-  const valid = authenticator.verify({ token: String(code), secret: user.mfaSecret })
+  const valid = authenticator.verify({ token: String(code), secret: decryptSecret(user.mfaSecret) })
   if (!valid) {
     logger.warn({ userId: user.id }, 'MFA verify: invalid TOTP code')
     res.status(401).json({ error: 'Invalid TOTP code' })

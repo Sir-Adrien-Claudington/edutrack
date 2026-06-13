@@ -47,7 +47,9 @@ export default function NewAssignment() {
     api
       .get('/rubrics')
       .then((r) => setRubrics(r.data))
-      .catch(() => {})
+      .catch(() => {
+        /* non-critical prefetch; ignore failure */
+      })
   }, [])
 
   function updateQuestion(i: number, field: keyof Question, value: any) {

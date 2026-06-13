@@ -21,7 +21,9 @@ export default function AnnouncementBanner() {
     api
       .get('/admin/announcements/active')
       .then((r) => setAnnouncements(r.data))
-      .catch(() => {})
+      .catch(() => {
+        /* non-critical prefetch; ignore failure */
+      })
   }, [])
 
   function dismiss(id: string) {
