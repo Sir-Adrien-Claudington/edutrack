@@ -28,6 +28,23 @@ export async function submitAssignment(req: AuthRequest, res: Response) {
     return
   }
 
+  // Access control (IDOR guard): only a student enrolled in this assignment's
+  // class may submit, and only while the assignment is published. Checked
+  // before any resubmission state is read.
+  const enrolled = await prisma.enrollment.findUnique({
+    where: {
+      studentId_classroomId: { studentId: req.user!.id, classroomId: assignment.classroomId },
+    },
+  })
+  if (!enrolled) {
+    res.status(403).json({ error: 'You are not enrolled in the class for this assignment.' })
+    return
+  }
+  if (assignment.status !== 'PUBLISHED') {
+    res.status(403).json({ error: 'This assignment is not open for submissions.' })
+    return
+  }
+
   // A student may have a previous submission. Decide whether this is a first
   // submission or an allowed resubmission.
   const existing = await prisma.submission.findFirst({

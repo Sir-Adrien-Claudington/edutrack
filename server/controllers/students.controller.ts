@@ -19,6 +19,15 @@ export async function addParentContact(req: AuthRequest, res: Response) {
     res.status(400).json({ error: 'type and summary required' })
     return
   }
+  // Access control (IDOR guard): a teacher may only log contacts for a student
+  // enrolled in one of their own classrooms.
+  const enrolled = await prisma.enrollment.findFirst({
+    where: { studentId, classroom: { teacherId: req.user!.id } },
+  })
+  if (!enrolled && req.user!.role !== 'ADMIN') {
+    res.status(403).json({ error: 'Forbidden' })
+    return
+  }
   const contact = await prisma.parentContact.create({
     data: {
       studentId,
