@@ -91,7 +91,7 @@ export default function Interventions() {
         {loading ? (
           <div className="text-center py-16 text-gray-400">Loading…</div>
         ) : (
-          <div className="grid grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {STAGES.map((stage) => {
               const cfg = STAGE_CONFIG[stage]
               const items = byStage(stage)

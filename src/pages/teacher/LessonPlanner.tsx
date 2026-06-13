@@ -127,8 +127,8 @@ export default function LessonPlanner() {
           </div>
         </div>
 
-        <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden">
-          <div className="grid grid-cols-6 border-b border-gray-200 dark:border-gray-700">
+        <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl overflow-x-auto">
+          <div className="grid grid-cols-6 border-b border-gray-200 dark:border-gray-700 min-w-[600px]">
             <div className="px-3 py-2 text-xs font-medium text-gray-400 border-r border-gray-200 dark:border-gray-700">
               Period
             </div>
@@ -144,7 +144,7 @@ export default function LessonPlanner() {
           {PERIODS.map((period) => (
             <div
               key={period}
-              className="grid grid-cols-6 border-b border-gray-100 dark:border-gray-700 last:border-b-0"
+              className="grid grid-cols-6 border-b border-gray-100 dark:border-gray-700 last:border-b-0 min-w-[600px]"
             >
               <div className="px-3 py-3 text-xs font-medium text-gray-400 border-r border-gray-200 dark:border-gray-700 flex items-center">
                 {period}
