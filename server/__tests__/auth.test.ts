@@ -132,6 +132,21 @@ describe('POST /api/auth/login', () => {
     expect(res.headers['set-cookie'][0]).toMatch(/HttpOnly/i)
   })
 
+  it('also returns the refresh token in the body for the Electron client', async () => {
+    mockUser.findUnique.mockResolvedValue(FAKE_USER)
+    mockBcrypt.compare.mockResolvedValue(true)
+    mockUser.update.mockResolvedValue({})
+
+    const res = await request(app)
+      .post('/api/auth/login')
+      .set('X-Client', 'electron')
+      .send({ email: 'teacher@test.com', password: 'Password1!' })
+
+    expect(res.status).toBe(200)
+    expect(res.body.access).toBeDefined()
+    expect(res.body.refresh).toBeDefined() // desktop persists this
+  })
+
   it('returns 401 on wrong password', async () => {
     mockUser.findUnique.mockResolvedValue(FAKE_USER)
     mockBcrypt.compare.mockResolvedValue(false)
@@ -182,6 +197,21 @@ describe('POST /api/auth/refresh', () => {
     expect(res.status).toBe(200)
     expect(res.body.access).toBeDefined()
     expect(res.body.refresh).toBeUndefined()
+  })
+
+  it('accepts a body refresh token and returns one for the Electron client', async () => {
+    const refreshToken = makeRefreshToken({ id: FAKE_USER.id })
+    mockUser.findUnique.mockResolvedValue(FAKE_USER)
+    mockUser.update.mockResolvedValue({})
+
+    const res = await request(app)
+      .post('/api/auth/refresh')
+      .set('X-Client', 'electron')
+      .send({ refresh: refreshToken })
+
+    expect(res.status).toBe(200)
+    expect(res.body.access).toBeDefined()
+    expect(res.body.refresh).toBeDefined()
   })
 
   it('returns 401 when refresh token is invalid', async () => {

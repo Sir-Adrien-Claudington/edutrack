@@ -7,6 +7,13 @@ import { logger } from '../lib/logger.js'
 import { setRefreshCookie, clearRefreshCookie } from './auth.cookie.js'
 import { generateTokens } from '../lib/tokens.js'
 
+// The Electron desktop app (which sends `X-Client: electron`) can't rely on the
+// HttpOnly refresh cookie, so it also receives the refresh token in the body to
+// persist locally. The web app never gets it in the body (cookie only).
+function bodyRefresh(req: Request, refresh: string): { refresh?: string } {
+  return req.headers['x-client'] === 'electron' ? { refresh } : {}
+}
+
 function validatePassword(password: string): string | null {
   if (password.length < 8) return 'Password must be at least 8 characters'
   if (password.length > 128) return 'Password too long (max 128 characters)'
@@ -49,6 +56,7 @@ export async function register(req: Request, res: Response) {
   res.status(201).json({
     user: { id: user.id, email: user.email, name: user.name, role: user.role },
     access: tokens.access,
+    ...bodyRefresh(req, tokens.refresh),
   })
 }
 
@@ -82,6 +90,7 @@ export async function login(req: Request, res: Response) {
     res.json({
       user: { id: user.id, email: user.email, name: user.name, role: user.role },
       access: tokens.access,
+      ...bodyRefresh(req, tokens.refresh),
     })
     return
   }
@@ -126,11 +135,14 @@ export async function login(req: Request, res: Response) {
   res.json({
     user: { id: user.id, email: user.email, name: user.name, role: user.role },
     access: tokens.access,
+    ...bodyRefresh(req, tokens.refresh),
   })
 }
 
 export async function refresh(req: Request, res: Response) {
-  const refreshToken = req.cookies?.refresh_token
+  // Cookie for the web app; body token for Electron, where SameSite=None
+  // cookies from a file:// origin are unreliable.
+  const refreshToken = req.cookies?.refresh_token ?? req.body?.refresh
   if (!refreshToken) {
     res.status(400).json({ error: 'Refresh token required' })
     return
@@ -159,7 +171,7 @@ export async function refresh(req: Request, res: Response) {
     })
     const tokens = generateTokens(refreshed)
     setRefreshCookie(res, tokens.refresh)
-    res.json({ access: tokens.access })
+    res.json({ access: tokens.access, ...bodyRefresh(req, tokens.refresh) })
   } catch {
     res.status(401).json({ error: 'Invalid refresh token' })
   }

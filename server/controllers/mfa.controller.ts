@@ -134,5 +134,6 @@ export async function verifyMfa(req: AuthRequest, res: Response) {
   res.json({
     user: { id: user.id, email: user.email, name: user.name, role: user.role },
     access: tokens.access,
+    ...(req.headers['x-client'] === 'electron' ? { refresh: tokens.refresh } : {}),
   })
 }

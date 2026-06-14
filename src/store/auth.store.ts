@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import api from '../api/client'
-import { setToken } from '../api/token'
+import { setToken, setRefresh } from '../api/token'
 
 interface User {
   id: string
@@ -26,18 +26,21 @@ export const useAuthStore = create<AuthState>((set) => ({
   login: async (email, password) => {
     const { data } = await api.post('/auth/login', { email, password })
     setToken(data.access)
+    setRefresh(data.refresh ?? null)
     set({ user: data.user })
   },
 
   loginWithUsername: async (username, classCode) => {
     const { data } = await api.post('/auth/login', { username, classCode })
     setToken(data.access)
+    setRefresh(data.refresh ?? null)
     set({ user: data.user })
   },
 
   register: async (email, password, name, role) => {
     const { data } = await api.post('/auth/register', { email, password, name, role })
     setToken(data.access)
+    setRefresh(data.refresh ?? null)
     set({ user: data.user })
   },
 
@@ -48,6 +51,7 @@ export const useAuthStore = create<AuthState>((set) => ({
       // Proceed with client-side logout even if server call fails
     }
     setToken(null)
+    setRefresh(null)
     set({ user: null })
   },
 
