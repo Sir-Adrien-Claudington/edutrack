@@ -1,5 +1,6 @@
 import axios from 'axios'
 import { getToken, setToken, getRefresh, setRefresh } from './token'
+import { fireAuthExpired } from './authEvents'
 
 const API_BASE = (import.meta.env.VITE_API_URL ?? 'http://localhost:4000') as string
 
@@ -40,8 +41,11 @@ api.interceptors.response.use(
         setToken(null)
         setRefresh(null)
         if (refreshErr?.response?.status === 401 || refreshErr?.response?.status === 403) {
-          const isElectron = typeof window !== 'undefined' && (window as any).electron
-          window.location.href = isElectron ? '#/login' : '/login'
+          // Session is unrecoverable. Clear auth state and let the router show
+          // /login via SPA navigation. Do NOT hard-reload here — a reload re-runs
+          // the failing /me -> /refresh on every load, looping until the rate
+          // limiter trips ("Too many requests").
+          fireAuthExpired()
         }
       }
     }

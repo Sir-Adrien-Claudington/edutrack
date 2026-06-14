@@ -34,7 +34,11 @@ describe('mfaCrypto', () => {
 
   it('rejects a tampered ciphertext (GCM auth tag)', () => {
     const enc = encryptSecret('JBSWY3DPEHPK3PXP')
-    const tampered = enc.slice(0, -2) + (enc.endsWith('A') ? 'B' : 'A') + enc.slice(-1)
+    // Flip one base64 char in the payload to a guaranteed-different value so the
+    // decoded bytes always change and GCM authentication always fails.
+    const i = enc.length - 6
+    const repl = enc[i] === 'A' ? 'B' : 'A'
+    const tampered = enc.slice(0, i) + repl + enc.slice(i + 1)
     expect(() => decryptSecret(tampered)).toThrow()
   })
 })

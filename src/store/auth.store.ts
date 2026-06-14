@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import api from '../api/client'
 import { setToken, setRefresh } from '../api/token'
+import { setAuthExpiredHandler } from '../api/authEvents'
 
 interface User {
   id: string
@@ -67,3 +68,9 @@ export const useAuthStore = create<AuthState>((set) => ({
     }
   },
 }))
+
+// When the API client can't refresh an expired session, drop the user so
+// ProtectedRoute redirects to /login (SPA, no reload — avoids the refresh loop).
+setAuthExpiredHandler(() => {
+  useAuthStore.setState({ user: null, loading: false })
+})
