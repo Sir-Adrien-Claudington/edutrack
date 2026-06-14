@@ -4,15 +4,8 @@ import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
 import { prisma } from '../prisma/client.js'
 import { logger } from '../lib/logger.js'
-import { setRefreshCookie, clearRefreshCookie } from './auth.cookie.js'
+import { setRefreshCookie, clearRefreshCookie, bodyRefresh, sendSession } from './auth.cookie.js'
 import { generateTokens } from '../lib/tokens.js'
-
-// The Electron desktop app (which sends `X-Client: electron`) can't rely on the
-// HttpOnly refresh cookie, so it also receives the refresh token in the body to
-// persist locally. The web app never gets it in the body (cookie only).
-function bodyRefresh(req: Request, refresh: string): { refresh?: string } {
-  return req.headers['x-client'] === 'electron' ? { refresh } : {}
-}
 
 function validatePassword(password: string): string | null {
   if (password.length < 8) return 'Password must be at least 8 characters'
@@ -52,12 +45,7 @@ export async function register(req: Request, res: Response) {
     data: { email: email.toLowerCase().trim(), passwordHash, name: name.trim(), role: 'STUDENT' },
   })
   const tokens = generateTokens(user)
-  setRefreshCookie(res, tokens.refresh)
-  res.status(201).json({
-    user: { id: user.id, email: user.email, name: user.name, role: user.role },
-    access: tokens.access,
-    ...bodyRefresh(req, tokens.refresh),
-  })
+  sendSession(req, res, user, tokens, 201)
 }
 
 export async function login(req: Request, res: Response) {
@@ -86,12 +74,7 @@ export async function login(req: Request, res: Response) {
     await prisma.user.update({ where: { id: user.id }, data: { lastLoginAt: new Date() } })
     logger.info({ event: 'LOGIN_SUCCESS', userId: user.id, role: user.role }, 'login success')
     const tokens = generateTokens(user)
-    setRefreshCookie(res, tokens.refresh)
-    res.json({
-      user: { id: user.id, email: user.email, name: user.name, role: user.role },
-      access: tokens.access,
-      ...bodyRefresh(req, tokens.refresh),
-    })
+    sendSession(req, res, user, tokens)
     return
   }
 
@@ -131,12 +114,7 @@ export async function login(req: Request, res: Response) {
   await prisma.user.update({ where: { id: user.id }, data: { lastLoginAt: new Date() } })
   logger.info({ event: 'LOGIN_SUCCESS', userId: user.id, role: user.role }, 'login success')
   const tokens = generateTokens(user)
-  setRefreshCookie(res, tokens.refresh)
-  res.json({
-    user: { id: user.id, email: user.email, name: user.name, role: user.role },
-    access: tokens.access,
-    ...bodyRefresh(req, tokens.refresh),
-  })
+  sendSession(req, res, user, tokens)
 }
 
 export async function refresh(req: Request, res: Response) {

@@ -7,7 +7,7 @@ const { authenticator } = createRequire(import.meta.url)('otplib') as {
 import type { AuthRequest } from '../middleware/auth.js'
 import { prisma } from '../prisma/client.js'
 import { logger } from '../lib/logger.js'
-import { setRefreshCookie } from './auth.cookie.js'
+import { sendSession } from './auth.cookie.js'
 import { generateTokens } from '../lib/tokens.js'
 import { encryptSecret, decryptSecret } from '../lib/mfaCrypto.js'
 
@@ -130,10 +130,5 @@ export async function verifyMfa(req: AuthRequest, res: Response) {
   await prisma.user.update({ where: { id: user.id }, data: { lastLoginAt: new Date() } })
 
   const tokens = generateTokens(user)
-  setRefreshCookie(res, tokens.refresh)
-  res.json({
-    user: { id: user.id, email: user.email, name: user.name, role: user.role },
-    access: tokens.access,
-    ...(req.headers['x-client'] === 'electron' ? { refresh: tokens.refresh } : {}),
-  })
+  sendSession(req, res, user, tokens)
 }
