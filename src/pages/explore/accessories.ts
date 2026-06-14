@@ -76,6 +76,17 @@ export const ACCESSORIES: Accessory[] = [
     path: '/journey?embed=1',
     tags: ['Science', '3D', 'Reading'],
   },
+  {
+    slug: 'sky',
+    title: 'Sky Compass',
+    blurb:
+      'Point your phone at the sky to identify the stars, planets and constellations overhead — calculated live for your location and the current time.',
+    subject: 'Space',
+    category: 'Explorative App',
+    emoji: '🧭',
+    path: '/sky?embed=1',
+    tags: ['Science', 'AR', 'Best on phone'],
+  },
   // --- Space: learning games (tiered) -----------------------------------------
   {
     slug: 'games-beginner',

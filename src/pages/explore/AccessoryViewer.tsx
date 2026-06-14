@@ -126,7 +126,7 @@ export default function AccessoryViewer() {
                 className="w-full block"
                 style={{ height: 'min(78vh, 820px)', minHeight: 460, border: 0 }}
                 loading="lazy"
-                allow="fullscreen"
+                allow="fullscreen; geolocation; gyroscope; accelerometer; magnetometer"
                 sandbox="allow-scripts allow-same-origin allow-popups"
               />
             </div>
