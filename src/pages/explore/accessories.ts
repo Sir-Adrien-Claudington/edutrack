@@ -146,6 +146,18 @@ export const ACCESSORIES: Accessory[] = [
     path: '/minerals?embed=1',
     tags: ['Mineralogy', '3D', 'Interactive'],
   },
+  // --- Geology: learning game -------------------------------------------------
+  {
+    slug: 'mine-game',
+    title: 'Mine Game',
+    blurb:
+      'Click a real Australian mine site on the map, zoom into the tunnel, and tap mineral veins to discover the geology behind gold, copper, diamonds and more.',
+    subject: 'Geology',
+    category: 'Learning Game',
+    emoji: '⛏️',
+    path: '/mine-game?embed=1',
+    tags: ['Geology', 'Game', 'Australia'],
+  },
 ]
 
 export function findAccessory(slug: string | undefined): Accessory | undefined {
