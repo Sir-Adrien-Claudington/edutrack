@@ -10,6 +10,15 @@
 
 export const STARSCAPE_BASE = 'https://starscape-desktop.netlify.app'
 
+// Learning Accessories are served entirely by the StarScape/GeoScape site.
+// That deployment was archived (2026-07-19) to retire Netlify, so the whole
+// section is disabled: nav link, dashboard banner, and the pages self-gate on
+// this flag, and the server CSP no longer whitelists the embed origin.
+// To bring it back: redeploy StarScape to a functions-capable host (it needs
+// the JPL Horizons proxy), point STARSCAPE_BASE at the new origin, restore the
+// frameSrc entry in server/app.ts, and set this to true.
+export const ACCESSORIES_ENABLED = false
+
 export type AccessorySubject = 'Space' | 'Geology'
 export type AccessoryCategory = 'Explorative App' | 'Learning Game'
 export type AccessoryLevel = 'Beginner' | 'Intermediate' | 'Knowledgeable'

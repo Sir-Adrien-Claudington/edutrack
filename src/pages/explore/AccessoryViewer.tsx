@@ -2,7 +2,7 @@ import { useParams, Link, Navigate } from 'react-router-dom'
 import { useAuthStore } from '../../store/auth.store'
 import StudentNav from '../../components/StudentNav'
 import TeacherNav from '../../components/TeacherNav'
-import { findAccessory, STARSCAPE_BASE } from './accessories'
+import { ACCESSORIES_ENABLED, findAccessory, STARSCAPE_BASE } from './accessories'
 
 export default function AccessoryViewer() {
   const { slug } = useParams<{ slug: string }>()
@@ -10,6 +10,9 @@ export default function AccessoryViewer() {
   const isStudent = user?.role === 'STUDENT'
   const accessory = findAccessory(slug)
 
+  // Section archived — send any bookmarked deep link to the Explore page,
+  // which shows the "unavailable" notice.
+  if (!ACCESSORIES_ENABLED) return <Navigate to="/explore" replace />
   if (!accessory) return <Navigate to="/explore" replace />
 
   const src = STARSCAPE_BASE + accessory.path

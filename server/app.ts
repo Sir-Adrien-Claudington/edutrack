@@ -51,9 +51,10 @@ export function createApp() {
           imgSrc: ["'self'", 'data:', 'https:'],
           connectSrc: ["'self'", 'https:'],
           objectSrc: ["'none'"],
-          // Learning Accessories embed the public StarScape app (universe
-          // explorer + space games) via iframe. Scoped to that one origin.
-          frameSrc: ["'self'", 'https://starscape-desktop.netlify.app'],
+          // Learning Accessories (StarScape embeds) were archived 2026-07-19;
+          // no cross-origin frames are embedded, so this stays locked down.
+          // If the section returns, re-add the embed origin here.
+          frameSrc: ["'none'"],
         },
       },
       crossOriginEmbedderPolicy: false,

@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom'
 import { useAuthStore } from '../../store/auth.store'
 import StudentNav from '../../components/StudentNav'
 import TeacherNav from '../../components/TeacherNav'
-import { ACCESSORIES, SUBJECTS, type Accessory } from './accessories'
+import { ACCESSORIES, ACCESSORIES_ENABLED, SUBJECTS, type Accessory } from './accessories'
 
 const LEVEL_STYLE: Record<string, string> = {
   Beginner: 'bg-teal-100 text-teal-700 dark:bg-teal-900/40 dark:text-teal-300',
@@ -68,6 +68,32 @@ function AccessoryCard({ a }: { a: Accessory }) {
 export default function Explore() {
   const user = useAuthStore((s) => s.user)
   const isStudent = user?.role === 'STUDENT'
+
+  // Section archived — show a calm notice rather than empty embeds.
+  if (!ACCESSORIES_ENABLED) {
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+        {isStudent ? <StudentNav activePage="dashboard" /> : <TeacherNav activePage="dashboard" />}
+        <main className="max-w-2xl mx-auto px-6 py-16 text-center">
+          <div className="text-5xl mb-4" aria-hidden="true">
+            🗺️
+          </div>
+          <h1 className="text-xl font-semibold text-gray-900 dark:text-white">
+            Learning Accessories are unavailable
+          </h1>
+          <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">
+            This section has been retired for now. Everything else in EduTrack works as usual.
+          </p>
+          <Link
+            to={isStudent ? '/student/dashboard' : '/teacher/dashboard'}
+            className="mt-6 inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-teal-600 hover:bg-teal-700 text-white text-sm font-semibold transition-colors"
+          >
+            Back to dashboard
+          </Link>
+        </main>
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">

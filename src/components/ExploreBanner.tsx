@@ -1,8 +1,11 @@
 import { Link } from 'react-router-dom'
+import { ACCESSORIES_ENABLED } from '../pages/explore/accessories'
 
 // Dashboard entry point for the Learning Accessories section (/explore).
 // accent matches the host dashboard: teal = student, indigo = teacher.
 export default function ExploreBanner({ accent = 'teal' }: { accent?: 'teal' | 'indigo' }) {
+  // Section archived — render nothing so neither dashboard shows the entry.
+  if (!ACCESSORIES_ENABLED) return null
   const hover =
     accent === 'teal'
       ? 'hover:border-teal-400 dark:hover:border-teal-500'
